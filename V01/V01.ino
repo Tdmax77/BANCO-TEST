@@ -1,9 +1,13 @@
-/*Software per la taratura delle pompe nafta del 46F  
- * Arduino A processa il programma, legge il sensore di pressione e legge il comparatore dello Start of inj, arduino B legge il comparatore del Quantity
- */
+/*Software per la taratura delle pompe nafta del 46F
+   Arduino A processa il programma, legge il sensore di pressione e legge il comparatore dello Start of inj, arduino B legge il comparatore del Quantity
+   V101 16 giugno 2021 aggiunto pulsante in avvio per escludere i
+*/
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
+
+int ver = 101; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 byte f0 = 0;    // variabili per spi
 byte f1 = 0;    // variabili per spi
 int num2 = 0;   // variabili per spi
@@ -44,6 +48,7 @@ float PTprec = 0;         //Pressione Target
 
 
 
+int escludicomparatori = 0;
 void setup() {
 
   Wire.begin();
@@ -62,53 +67,69 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Guideblock");
   lcd.setCursor(0, 1);
-  lcd.print("TestBench v.01");           // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+  lcd.print("TestBench v");
+  lcd.setCursor(12,1);
+  lcd.print(ver);
   delay(3000);
   lcd.clear();
   write_lcdBG();
   /* parte display i2c */
 
-  pinMode(10, INPUT_PULLUP);  // tasto reset valore 
-  pinMode(11, INPUT_PULLUP);  // tasto reset valore 
-  pinMode(12, INPUT_PULLUP);  // tasto reset valore 
-
+  pinMode(10, INPUT_PULLUP);  // tasto reset valore
+  pinMode(11, INPUT_PULLUP);  // tasto reset valore
+  pinMode(12, INPUT_PULLUP);  // tasto reset valore
+  pinMode(9, INPUT_PULLUP);  // tasto per avvio senza comparatori
+  int bypass = digitalRead(9);
+  if (bypass == LOW) {
+    escludicomparatori = 1;
+  }
 }
 
-
 void loop() {
+/*
+int bypass = digitalRead(9);
+  if ((bypass == LOW) && (escludicomparatori == 0)) {
+  escludicomparatori = 1;
+}
+if ((bypass == LOW) && (escludicomparatori == 1)) {
+  escludicomparatori = 0;
+}
+*/
 
+if (escludicomparatori == 0) {
   read_mitutoyo();          // legge il comparatore1 onboard
-  read_slave();             // legge il comparatore2 sull'arduino in wire
+    read_slave();             // legge il comparatore2 sull'arduino in wire
+  }
   read_sensor();            // legge sensore pressione onboard
   read_serialmonitor();     //legge la seriale (per azzeramenti debug)
 
   int r1 = digitalRead(10);   // crea variabile per reset PT Pressione target
-  int r2 = digitalRead(11);   // crea variabile per reset  qty 
-  int r3 = digitalRead(12);   // crea variabile per reset  inj
+           int r2 = digitalRead(11);   // crea variabile per reset  qty
+           int r3 = digitalRead(12);   // crea variabile per reset  inj
 
 
   if (r3 == LOW) {          // se premuto azzera il valore di inj
-    lcd.setCursor(4, 0);
+  lcd.setCursor(4, 0);
     lcd.print("     ");
     off = -num;
   }
   if (r2 == LOW) {          // se premuto azzera il valore di qty
-    lcd.setCursor(4, 1);
+  lcd.setCursor(4, 1);
     lcd.print("     ");
     off2 = -num2;
   }
   if (r1 == LOW) {          // se premuto azzera il valore di PT (target)
-    PT = 0;
-    PTprec = 0;
-    PM = 0;
-    PressioneBar = 0;
-  }
-  PM = max(PressioneBar, PM);     // confronta la pressione istantanea con quella massima ed assegna a PM il valore piu alto 
-  PT = PM / 2;                    // pressione Target = pressione Massima /2
-  Comp1 = num + off;              // assegna alla variabile Comp1 la lettura dopo l'azzeramento  (valore iniziale + offset azzeramento)
-  Comp2 = num2 + off2;
-  write_serial();                 // scrive sulla seriale i dati
-  write_lcd();                    // scrive sull'LCD i dati
+  PT = 0;
+  PTprec = 0;
+  PM = 0;
+  PressioneBar = 0;
+}
+PM = max(PressioneBar, PM);     // confronta la pressione istantanea con quella massima ed assegna a PM il valore piu alto
+     PT = PM / 2;                    // pressione Target = pressione Massima /2
+     Comp1 = num + off;              // assegna alla variabile Comp1 la lettura dopo l'azzeramento  (valore iniziale + offset azzeramento)
+     Comp2 = num2 + off2;
+     write_serial();                 // scrive sulla seriale i dati
+     write_lcd();                    // scrive sull'LCD i dati
 }
 
 
@@ -203,7 +224,7 @@ void write_serial() {
   Serial.print(PT);
   Serial.println("     M,T,A");
 }
-void write_lcd() {     // scrive i dati sul display solo se cambiano di valore 
+void write_lcd() {     // scrive i dati sul display solo se cambiano di valore
   if (Comp1 != Comp1prec) {
     Comp1prec = Comp1;
     lcd.setCursor(4, 0);
