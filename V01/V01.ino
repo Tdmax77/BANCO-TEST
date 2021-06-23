@@ -1,13 +1,14 @@
 /*Software per la taratura delle pompe nafta del 46F
    Arduino A processa il programma, legge il sensore di pressione e legge il comparatore dello Start of inj, arduino B legge il comparatore del Quantity
-   V101 16 giugno 2021 aggiunto pulsante in avvio per escludere i
+   V101 16 giugno 2021 aggiunto pulsante in avvio per escludere i compartatori
+   V012 23 giugno 2012 modificato Inj in Tim a display
 */
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SPI.h>
 
-int ver = 101; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+int ver = 102; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 byte f0 = 0;    // variabili per spi
 byte f1 = 0;    // variabili per spi
 int num2 = 0;   // variabili per spi
@@ -86,15 +87,7 @@ void setup() {
 }
 
 void loop() {
-/*
-int bypass = digitalRead(9);
-  if ((bypass == LOW) && (escludicomparatori == 0)) {
-  escludicomparatori = 1;
-}
-if ((bypass == LOW) && (escludicomparatori == 1)) {
-  escludicomparatori = 0;
-}
-*/
+
 
 if (escludicomparatori == 0) {
   read_mitutoyo();          // legge il comparatore1 onboard
@@ -258,7 +251,7 @@ void write_lcd() {     // scrive i dati sul display solo se cambiano di valore
 
 void write_lcdBG() {  // scrive il "background" che non viene mai aggiornato (non serve e così on flashano le scrite
   lcd.setCursor(0, 0);
-  lcd.print("Inj=       ");
+  lcd.print("Tim=       ");
   lcd.setCursor(0, 1);
   lcd.print("Qty=       ");
   lcd.setCursor(9, 0);
