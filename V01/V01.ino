@@ -171,7 +171,7 @@ void setup() {
   lcd.clear();
   int bypass = digitalRead(buttonMode);   //
   /* parte display i2c */
-  if (bypass == HIGH) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità volano
+  if (bypass == LOW) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità volano
     AA = 1;
     write_lcdBG_AA();
     //digitalWrite(Arduino2_PWR, HIGH);
