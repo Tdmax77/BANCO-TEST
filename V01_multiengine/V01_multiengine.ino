@@ -5,7 +5,6 @@
    V1.04 test per modulo radio : modificata la logica dei pulsanti, sul coto sono a 0 e li porto a 5 , qui sono a 5 e li porto a zero
   quasi tutto va, da sistemare il secondo comparatore che non legge.
    V 1.10 dual boot funzionante, sembra tutto ok
-   V1.11  sto aggiungendo la confiogurazione engine ed ho messo il display a 2004 al posto del 1602
 */
 
 #include <Wire.h>
@@ -15,7 +14,7 @@
 #include <RF24.h>
 #include <printf.h>
 
-const float vers = 1.11; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.10; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 byte f0 = 0;    // variabili per spi
 byte f1 = 0;    // variabili per spi
 int num2 = 0;   // variabili per spi
@@ -47,7 +46,7 @@ int off2 = 0;       // variabile per azzeramento
 
 
 /* variabile display*/
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 int Comp1prec = 0;     // variabile per definire se il dato è nuovo (e aggiornare il display)
 int Comp2prec = 0;     // variabile per definire se il dato è nuovo (e aggiornare il display)
 float PMprec = 0;         //Pressione Massima
@@ -86,6 +85,9 @@ const int button_B = 6;
 const int button_C = 5;  //numero pin a cui è collegato il pulsante di UP
 const int button_A = 7;  //numero pin a cui è collegato il pulsnte di DOWN
 const int button_D = 3;
+//const int button_B = 6;
+//const int button_C = 5;  //numero pin a cui è collegato il pulsante di UP
+//const int button_A = 7;  //numero pin a cui è collegato il pulsnte di DOWN
 int buttonOkState;
 int buttonUpState;  //stato attuale del pulsante di UP
 int buttonDownState;  //stato attuale del pulsante di Down
@@ -103,6 +105,10 @@ int var = 0;  //variabile da aumentare o diminuire come valore
 const int varMax = 720; //limite massimo valore della variabile
 const int varMin = 0; //limite minimo valore della variabile
 
+int engine = 0;  //variabile da aumentare o diminuire come valore            serve per setup motore
+const int engineMax = 5; //limite massimo valore della variabile
+const int engineMin = 0; //limite minimo valore della variabile
+byte engine_setup = 0;
 
 
 int readingUp = 0;  //Lettura ingresso digitale del pulsante di UP
@@ -110,27 +116,10 @@ int readingDown = 0;  //Lettura ingresso digitale del pulsante di Down
 
 /*Variabili Offset servono ad inserire il valore usando i 3 pulsanti*/
 
-
-/* variabili per setup motore*/
-int engine = 0;  //variabile da aumentare o diminuire come valore            serve per setup motore
-const int engineMax = 14; //limite massimo valore della variabile
-const int engineMin = 1; //limite minimo valore della variabile
-byte engine_setup = 0;
-
-int timing = 1800;  //variabile da aumentare o diminuire come valore            serve per setup motore
-float timing2 = 0;
-const int timingMax = 3000; //limite massimo valore della variabile
-const int timingMin = 1000; //limite minimo valore della variabile
-float timing_displayed;
-/* variabili per setup motore*/
-
-
-
 int counterprec;
 // da coto
 
 int AA = 0;
-
 const int Arduino2_PWR = A1;
 
 
@@ -152,6 +141,7 @@ void setup() {
   pinMode (button_B, INPUT_PULLUP);   //impostazione button_B come ingresso
   pinMode (button_D, INPUT_PULLUP);     //impostazione button_D come ingresso
   /*Parte Variabile Offset*/
+
   delay (500);
   Wire.begin();
   Serial.begin(38400);
@@ -180,23 +170,24 @@ void setup() {
   /* parte display i2c */
   lcd.init();                      // initialize the lcd
   lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Guideblock");
-  lcd.setCursor(0, 1);
-  lcd.print("TestBench v");
-  lcd.setCursor(12, 1);
-  lcd.print(vers);
-  delay(3000);
+  /* lcd.setCursor(0, 0);
+    lcd.print("Guideblock");
+    lcd.setCursor(0, 1);
+    lcd.print("TestBench v");
+    lcd.setCursor(12, 1);
+    lcd.print(vers);
+    delay(3000);*/
   lcd.clear();
   int bypass = digitalRead(button_D);   //
   /* parte display i2c */
-  if (bypass == HIGH) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità montaggio
+  if (bypass == HIGH) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità volano
     AA = 1;
     //write_lcdBG_AA();
 
   } else {
     AA = 0;
     write_lcdBG_bench();
+
   }
 
 }
@@ -214,15 +205,27 @@ void loop() {
 
 
 
-  if (AA == 0) banchetto();
+  if (AA == 0) {  //CONFIGURAZIONE BANCO
 
+    read_mitutoyo();          // legge il comparatore1 onboard
+    read_slave();             // legge il comparatore2 sull'arduino in wire
+    read_sensor();            // legge sensore pressione onboard
+    read_serialmonitor();     //legge la seriale (per azzeramenti debug)
+    pulsanti_bench();
+    PM = max(PressioneBar, PM);     // confronta la pressione istantanea con quella massima ed assegna a PM il valore piu alto
+    PT = PM / 2;                    // pressione Target = pressione Massima /2
+    Comp1 = num + off;              // assegna alla variabile Comp1 la lettura dopo l'azzeramento  (valore iniziale + offset azzeramento)
+    Comp2 = num2 + off2;
+    //write_serial();                 // scrive sulla seriale i dati
+    //write_lcdBG_bench();
+    write_lcd_bench();
+  }
 
+  if (AA == 1) { // CONFIGURAZIONE MONTAGGIO
 
-
-  if (AA == 1) { // CONFIGURAZIONE sul motore
-    Engine_setup();
-
-
+    while (engine_setup == 0) {
+      PROCEDURA_MOTORE();
+    }
     read_sensor();            // legge sensore pressione onboard
     read_serialmonitor();     //legge la seriale (per azzeramenti debug)
     pulsanti_AA();
@@ -242,7 +245,7 @@ void loop() {
     delay(5);                   // needed at least 1 ms of delay or display stay in NOT CONN state (i don't know why ...
     while ( network.available() ) {                             // if network is up  ... I need at least one slave active for to keep active the network, otherwise no network will be available
       if (mostraangolo == 1) {                                  // after a lost connection it need to refresh display also if value is not changed
-        lcd.setCursor(8, 1);
+        lcd.setCursor(8, 0);
         lcd.print(angstamp);
         mostraangolo = 0;                                     // reset value
       }
@@ -389,9 +392,6 @@ void read_serialmonitor() {  // legge i comandi da seriale più per debug che al
     case 'r':
       payload.OffsetReq = 5;
       break;
-      case 'c':
-      lcd.clear();
-      break;
   }
 }
 
@@ -474,7 +474,7 @@ void write_lcdBG_bench() {  // scrive il "background" che non viene mai aggiorna
 }
 
 void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
-  lcd.setCursor(0, 2);
+  lcd.setCursor(0, 0);
   lcd.print("ANG=            ");
   lcd.setCursor(0, 1);
   lcd.print("P=     ");
@@ -496,13 +496,13 @@ void pulsanti_AA() {
 void pulsanti_bench() {
 
   if (digitalRead(button_A) == LOW) {          // se premuto azzera il valore di inj
-    lcd.setCursor(4, 1);
+    lcd.setCursor(4, 0);
     lcd.print("     ");
     off = -num;
     Serial.println("PULSANTE DOWN");
   }
   if (digitalRead(button_B) == LOW) {          // se premuto azzera il valore di qty
-    lcd.setCursor(4, 2);
+    lcd.setCursor(4, 1);
     lcd.print("     ");
     off2 = -num2;
     Serial.println("PULSANTE OK");
@@ -518,17 +518,17 @@ void pulsanti_bench() {
 
 void display_no_conn() {
 
-  lcd.setCursor(0, 1);
-  lcd.println("   NO CONNECTION    ");
+  lcd.setCursor(0, 0);
+  lcd.println("NO CONNECTION   ");
   Serial.println("noconn");
 }
 
 void testo_richiesta_inserimento_offset() {
   lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.println("INSERIRE VALORE ");
   lcd.setCursor(0, 1);
-  lcd.println("  INSERIRE VALORE   ");
-  lcd.setCursor(0, 2);
-  lcd.println("  ANGOLO VOLANO     ");
+  lcd.println("ANGOLO VOLANO   ");
 }
 
 void display_angolo() {
@@ -538,9 +538,9 @@ void display_angolo() {
     angprint = payload.num_sent;                       //convert from long to float
     angstamp = angprint / 100;                         // add the comma
 
-    lcd.setCursor(4, 2);
+    lcd.setCursor(4, 0);
     lcd.print("          ");
-    lcd.setCursor(4, 2);
+    lcd.setCursor(4, 0);
     lcd.print(angstamp);
     Serial.println(angstamp);
   }
@@ -572,7 +572,6 @@ void readButtonState() {
     DownDebounceTime = millis();
   }
 }
-
 
 void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come offset
 
@@ -623,184 +622,60 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
   }
 }
 
-void banchetto() {  //CONFIGURAZIONE BANCO
+void PROCEDURA_MOTORE() { // mi restituisce un valore var che ho inserito come offset
 
-  read_mitutoyo();          // legge il comparatore1 onboard
-  read_slave();             // legge il comparatore2 sull'arduino in wire
-  read_sensor();            // legge sensore pressione onboard
-  read_serialmonitor();     //legge la seriale (per azzeramenti debug)
-  pulsanti_bench();
-  PM = max(PressioneBar, PM);     // confronta la pressione istantanea con quella massima ed assegna a PM il valore piu alto
-  PT = PM / 2;                    // pressione Target = pressione Massima /2
-  Comp1 = num + off;              // assegna alla variabile Comp1 la lettura dopo l'azzeramento  (valore iniziale + offset azzeramento)
-  Comp2 = num2 + off2;
-  //write_serial();                 // scrive sulla seriale i dati
-  //write_lcdBG_bench();
-  write_lcd_bench();
-}
+  readButtonState();  //Lettura stato buttons con controllo antirimbalzo
 
-void Engine_setup() {
-
-  while (engine_setup == 0) {
-    while (digitalRead(button_B) == HIGH) {
-      lcd.setCursor(0, 0);
-      lcd.print("Select ENGINE: ");
+  if (buttonUpState == HIGH || buttonDownState == HIGH) {
+    if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
+      if ((millis() - timerButtonPushed) > time_add_10) {
+        if ((millis() - timerButtonPushed) > time_add_100) {
+          if (buttonUpState == HIGH) engine = engine + 100;
+          if (buttonDownState == HIGH) engine = engine - 100;
+        } else {
+          int resto = 0;
+          if (buttonUpState == HIGH) resto = 10 - (engine % 10);
+          if (buttonDownState == HIGH) resto = (engine % 10);
+          if (resto == 0) {
+            if (buttonUpState == HIGH) engine = engine + 10;
+            if (buttonDownState == HIGH) engine = engine - 10;
+          } else {
+            if (buttonUpState == HIGH) engine = engine + resto;
+            if (buttonDownState == HIGH) engine = engine - resto;
+          }
+        }
+      } else {
+        if (buttonUpState == HIGH) engine++;
+        if (buttonDownState == HIGH) engine--;
+      }
+      timerPauseRepeat = millis();
+      repeatEnable = HIGH;
+      if (engine > engineMax) engine = engineMax;
+      if (engine < engineMin) engine = engineMin;
       lcd.setCursor(0, 3);
-      lcd.print("prev  ok  next");
-
-      readButtonState();  //Lettura stato buttons con controllo antirimbalzo
-
-      if (buttonUpState == HIGH || buttonDownState == HIGH) {
-        if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
-          if ((millis() - timerButtonPushed) > time_add_10) {
-            if ((millis() - timerButtonPushed) > time_add_100) {
-              if (buttonUpState == HIGH) engine = engine + 100;
-              if (buttonDownState == HIGH) engine = engine - 100;
-            } else {
-              int resto = 0;
-              if (buttonUpState == HIGH) resto = 10 - (engine % 10);
-              if (buttonDownState == HIGH) resto = (engine % 10);
-              if (resto == 0) {
-                if (buttonUpState == HIGH) engine = engine + 10;
-                if (buttonDownState == HIGH) engine = engine - 10;
-              } else {
-                if (buttonUpState == HIGH) engine = engine + resto;
-                if (buttonDownState == HIGH) engine = engine - resto;
-              }
-            }
-          } else {
-            if (buttonUpState == HIGH) engine++;
-            if (buttonDownState == HIGH) engine--;
-          }
-          timerPauseRepeat = millis();
-          repeatEnable = HIGH;
-          if (engine > engineMax) engine = engineMax;
-          if (engine < engineMin) engine = engineMin;
-          Serial.print("engine ");
-          Serial.println(engine);
-          lcd.setCursor(6, 1);
-          lista();
-        }
-      } else {
-        timerButtonPushed = millis();
-        timerPauseRepeat = millis();
-        repeatEnable = LOW;
+      lcd.print("                 ");    //disegnare caratteri vuoti dovrebbe essere piu veloce del clear
+      lcd.setCursor(0, 3);
+      switch (engine) {
+        case 1:
+          lcd.print("   18v46f CW   ");
+          break;
+        case 2:
+          lcd.print("   18v46f CCW  ");
+          break;
+        case 3:
+          lcd.print("   16v46f CW   ");
+          break;
+        case 4:
+          lcd.print("   16v46f CCW  ");
+          break;
+        case 5:
+          lcd.print("   12v46f CW   ");
+          break;
       }
     }
-    if (digitalRead(button_B) == LOW) {
-      Serial.println("premuto pulsante OK");
-    }
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("insert Timing: ");
-    lcd.setCursor(0, 3);
-    lcd.print("prev  ok  next");
-    while (digitalRead(button_B) == HIGH) {
-
-
-      readButtonState();  //Lettura stato buttons con controllo antirimbalzo
-
-      if (buttonUpState == HIGH || buttonDownState == HIGH) {
-        if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
-          if ((millis() - timerButtonPushed) > time_add_10) {
-            if ((millis() - timerButtonPushed) > time_add_100) {
-              if (buttonUpState == HIGH) timing = timing + 100;
-              if (buttonDownState == HIGH) timing = timing - 100;
-            } else {
-              int resto2 = 0;
-              if (buttonUpState == HIGH) resto2 = 10 - (timing % 10);
-              if (buttonDownState == HIGH) resto2 = (timing % 10);
-              if (resto2 == 0) {
-                if (buttonUpState == HIGH) timing = timing + 10;
-                if (buttonDownState == HIGH) timing = timing - 10;
-              } else {
-                if (buttonUpState == HIGH) timing = timing + resto2;
-                if (buttonDownState == HIGH) timing = timing - resto2;
-              }
-            }
-          } else {
-            if (buttonUpState == HIGH) timing++;
-            if (buttonDownState == HIGH) timing--;
-          }
-          timerPauseRepeat = millis();
-          repeatEnable = HIGH;
-          if (timing > timingMax) timing = timingMax;
-          if (timing < timingMin) timing = timingMin;
-          timing2 = timing;
-          timing_displayed = timing2 / 100;
-          lcd.setCursor (4, 1);
-          lcd.print(timing_displayed);
-          Serial.print("timing =");
-          Serial.println(timing_displayed);
-          lcd.setCursor(4, 1);
-        }
-      } else {
-        timerButtonPushed = millis();
-        timerPauseRepeat = millis();
-        repeatEnable = LOW;
-      }
-    }
-    if (digitalRead(button_B) == LOW) {
-      engine_setup = 1 ;
-      Serial.print("engine setup ");
-      Serial.println(engine_setup);
-      lcd.clear();
-    }
-  }
-
-  lcd.setCursor(0, 0);
-  lista();
-  lcd.setCursor(0, 12);
-  lcd.print("Tim=");
-  lcd.setCursor(0,16);
-  lcd.print(timing_displayed);
-}
-
-
-
-void lista() {
-  switch (engine) {
-    case 1:
-      lcd.print("16V46DF CW   ");
-      break;
-    case 2:
-      lcd.print("16V46DF CCW  ");
-      break;
-    case 3:
-      lcd.print("14V46DF CW   ");
-      break;
-    case 4:
-      lcd.print("14V46DF CCW  ");
-      break;
-    case 5:
-      lcd.print("12V46DF CW ");
-      break;
-    case 6:
-      lcd.print("12V46DF CCW");
-      break;
-    case 7:
-      lcd.print(" 9L46DF CW ");
-      break;
-    case 8:
-      lcd.print(" 9L46DF CCW");
-      break;
-    case 9:
-      lcd.print(" 8L46DF CW ");
-      break;
-    case 10:
-      lcd.print(" 8L46DF CCW");
-      break;
-    case 11:
-      lcd.print(" 7L46DF CW ");
-      break;
-    case 12:
-      lcd.print(" 7L46DF CCW");
-      break;
-    case 13:
-      lcd.print(" 6L46DF CW ");
-      break;
-    case 14:
-      lcd.print(" 6L46DF CCW");
-      break;
+  } else {
+    timerButtonPushed = millis();
+    timerPauseRepeat = millis();
+    repeatEnable = LOW;
   }
 }
