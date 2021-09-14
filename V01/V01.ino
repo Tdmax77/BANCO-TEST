@@ -1,3 +1,5 @@
+
+
 /*Software per la taratura delle pompe nafta del 46F
    Arduino A processa il programma, legge il sensore di pressione e legge il comparatore dello Start of inj, arduino B legge il comparatore del Quantity
    V101 16 giugno 2021 aggiunto pulsante in avvio per escludere i compartatori
@@ -6,16 +8,17 @@
   quasi tutto va, da sistemare il secondo comparatore che non legge.
    V 1.10 dual boot funzionante, sembra tutto ok
    V1.11  sto aggiungendo la confiogurazione engine ed ho messo il display a 2004 al posto del 1602
-   V1.12 aggiungendo la scrittura del cilindro 
+   V1.12 aggiungendo la scrittura del cilindro
 */
 
-#include <Wire.h>
+//#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include <SPI.h>
+//#include <SPI.h>
 #include <RF24Network.h>
 #include <RF24.h>
 #include <printf.h>
-#include <math.h>
+//#include <Vector.h>
+
 
 const float vers = 1.12; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 byte f0 = 0;    // variabili per spi
@@ -140,16 +143,32 @@ const int Arduino2_PWR = A1;
 int bypass = digitalRead(button_D);   //
 
 // variabili per mettere il nome del cilindro
-byte cylinder = 0;
-byte fire_spacing = 0;
-byte cw = 0;
+struct motore {
+  byte cylinder = 0;
+  byte fire_spacing = 0;
+  byte cw = 0;
+  int e[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+};
+motore motore;
 float scoppio = 0;
 byte cyl = 0;
-int e5[12] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24}; // 12V46DF  CW
-int e6[12] = {11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21}; // 12V46DF CCW
-int e13[6] = {11, 12, 14, 16, 15, 13};             //  6L46DF  CW
-int e14[6] = {11, 13, 15, 16, 14, 12};             //  6L46DF CCW
+
+
+int e5[16] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24, 0, 0, 0, 0}; // 12V46DF  CW
+int e6[16] = {11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21, 0, 0, 0, 0}; // 12V46DF CCW
+int e13[16] = {11, 12, 14, 16, 15, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF  CW
+int e14[16] = {11, 13, 15, 16, 14, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF CCW
+
+
+
+//Vector <int> e5({11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24,0,0,0,0}); // 12V46DF  CW
+//Vector <int> e6({11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21,0,0,0,0}); // 12V46DF CCW
+//Vector <int> e13({11, 12, 14, 16, 15, 13,0,0,0,0,0,0,0,0,0,0});   //  6L46DF  CW
+//Vector <int> e14({11, 13, 15, 16, 14, 12,0,0,0,0,0,0,0,0,0,0});   //  6L46DF CCW
 //variabili per mettere il nome del cilindro
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////     SETUP      ////////////////////////////
@@ -788,122 +807,145 @@ void lista() {
   switch (engine) {
     case 1:
       lcd.print("16V46DF CW   ");
-      cylinder = 16;
-      fire_spacing = 120;
-      cw = 1;
+      motore.cylinder = 16;
+      motore.fire_spacing = 120;
+      motore.cw = 1;
+      // motore.e = e1;
       break;
     case 2:
       lcd.print("16V46DF CCW  ");
-      cylinder = 16;
-      fire_spacing = 120;
-      cw = 0;
+      motore.cylinder = 16;
+      motore.fire_spacing = 120;
+      motore.cw = 0;
+      //motore.e = e1;
       break;
     case 3:
       lcd.print("14V46DF CW   ");
-      cylinder = 14;
-      fire_spacing = 120;
-      cw = 1;
+      motore.cylinder = 14;
+      motore.fire_spacing = 120;
+      motore.cw = 1;
+      // motore.e = e1;
       break;
     case 4:
       lcd.print("14V46DF CCW  ");
-      cylinder = 14;
-      fire_spacing = 120;
-      cw = 0;
+      motore.cylinder = 14;
+      motore.fire_spacing = 120;
+      motore.cw = 0;
+      // motore.e = e1;
       break;
     case 5:
       lcd.print("12V46DF CW ");
-      cylinder = 12;
-      fire_spacing = 120;
-      cw = 1;
+      motore.cylinder = 12;
+      motore.fire_spacing = 120;
+      motore.cw = 1;
+      for (int i = 0; i < 16; i++) {
+        motore.e[i] = e5[i];
+      };
       break;
     case 6:
       lcd.print("12V46DF CCW");
-      cylinder = 12;
-      fire_spacing = 120;
-      cw = 0;
+      motore.cylinder = 12;
+      motore.fire_spacing = 120;
+      motore.cw = 0;
+      for (int i = 0; i < 16; i++) {
+        motore.e[i] = e6[i];
+      };
       break;
     case 7:
       lcd.print(" 9L46DF CW ");
-      cylinder = 9;
-      fire_spacing = 80;
-      cw = 1;
+      motore.cylinder = 9;
+      motore.fire_spacing = 80;
+      motore.cw = 1;
+      // motore.e = e1;
       break;
     case 8:
       lcd.print(" 9L46DF CCW");
-      cylinder = 9;
-      fire_spacing = 80;
-      cw = 0;
+      motore.cylinder = 9;
+      motore.fire_spacing = 80;
+      motore.cw = 0;
+      // motore.e = e1;
       break;
     case 9:
       lcd.print(" 8L46DF CW ");
-      cylinder = 8;
-      fire_spacing = 90;
-      cw = 1;
+      motore.cylinder = 8;
+      motore.fire_spacing = 90;
+      motore.cw = 1;
+      // motore.e = e1;
       break;
     case 10:
       lcd.print(" 8L46DF CCW");
-      cylinder = 8;
-      fire_spacing = 90;
-      cw = 0;
+      motore.cylinder = 8;
+      motore.fire_spacing = 90;
+      motore.cw = 0;
       break;
     case 11:
       lcd.print(" 7L46DF CW ");
-      cylinder = 7;
-      fire_spacing = 0;
-      cw = 1;
+      motore.cylinder = 7;
+      motore.fire_spacing = 0;
+      motore.cw = 1;
+      // motore.e = e1;
       break;
     case 12:
       lcd.print(" 7L46DF CCW");
-      cylinder = 7;
-      fire_spacing = 0;
-      cw = 0;
+      motore.cylinder = 7;
+      motore.fire_spacing = 0;
+      motore.cw = 0;
+      // motore.e = e1;
       break;
     case 13:
       lcd.print(" 6L46DF CW ");
-      cylinder = 6;
-      fire_spacing = 120;
-      cw = 1 ;
+      motore.cylinder = 6;
+      motore.fire_spacing = 120;
+      motore.cw = 1 ;
+      for (int i = 0; i < 16; i++) {
+        motore.e[i] = e13[i];
+      };
       break;
     case 14:
       lcd.print(" 6L46DF CCW");
-      cylinder = 6;
-      fire_spacing = 120;
-      cw = 0;
+      motore.cylinder = 6;
+      motore.fire_spacing = 120;
+      motore.cw = 0;
+      for (int i = 0; i < 16; i++) {
+        motore.e[i] = e14[i];
+      };
       break;
-  }
+  };
 }
 
 void mostra_cilindro() {
 
-  if (cylinder > 10) {
-    for ( int i = 1; i < cylinder + 1; i++) {                    // per tutti i cilindri verifico se sono pari o dispari
+  if (motore.cylinder > 10) {
+    for ( int i = 1; i < motore.cylinder + 1; i++) {                    // per tutti i cilindri verifico se sono pari o dispari
       double mod = fmod(i, 2);
       Serial.print("mod = ");
       Serial.print(mod);
 
       if (mod == 1.0)  {                                          // 1 3 5  sui cilindri dispari aggiungo il delta tra le bancate (50°)
-        scoppio = ((i - 1) / 2) * fire_spacing  /*- timing_float*/;
+        scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*/;
         Serial.print(" cilindro = A");
-        cyl = e5[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
+        cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
         Serial.print(cyl);
 
       }
       else {                                                      // 2 4 6  cilindri pari
-        scoppio = (i / 2 * fire_spacing ) - fire_spacing + 50/*- timing_float*/;
+        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + 50/*- timing_float*/;
         Serial.print(" cilindro = B");
-        cyl = e5[i - 1] - 20;                       // devo modificare a senconda dell'engine mettendo il array corretto
+        cyl = motore.e[i - 1] - 20;                       // devo modificare a senconda dell'engine mettendo il array corretto
         Serial.print(cyl);
 
       }
       Serial.print(" scoppio= ");
       Serial.println(scoppio);
     }
-  } else
+  } 
+  else  // se motore linea quindi cilindri minori di 10 
   {
-    for ( int i = 1; i < cylinder + 1; i++) {
-      scoppio = ((i - 1) / 2) * fire_spacing  /*- timing_float*/;
+    for ( int i = 1; i < motore.cylinder + 1; i++) {
+     // scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*/;
+      scoppio = (i-1) * motore.fire_spacing  /*- timing_float*/;
       Serial.print(" cilindro = A");
-      cyl = e13[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
+      cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
       Serial.print(cyl);
       Serial.print(" scoppio= ");
       Serial.println(scoppio);
