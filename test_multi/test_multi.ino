@@ -9,6 +9,7 @@
    V 1.10 dual boot funzionante, sembra tutto ok
    V1.11  sto aggiungendo la confiogurazione engine ed ho messo il display a 2004 al posto del 1602
    V1.12 aggiungendo la scrittura del cilindro
+   v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta 
 */
 
 //#include <Wire.h>
@@ -20,7 +21,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.12; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.14; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -161,24 +162,29 @@ struct motore {
   byte fire_spacing = 0;
   byte cw = 0;
   byte e[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
+byte range = 2;
 
-
+byte e1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e4[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e5[16] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24, 0, 0, 0, 0}; // 12V46DF  CW
 byte e6[16] = {11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21, 0, 0, 0, 0}; // 12V46DF CCW
+byte e7[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e8[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e9[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e10[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e11[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte e12[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e13[16] = {11, 12, 14, 16, 15, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF  CW
 byte e14[16] = {11, 13, 15, 16, 14, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF CCW
-
-
-
-//Vector <int> e5({11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24,0,0,0,0}); // 12V46DF  CW
-//Vector <int> e6({11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21,0,0,0,0}); // 12V46DF CCW
-//Vector <int> e13({11, 12, 14, 16, 15, 13,0,0,0,0,0,0,0,0,0,0});   //  6L46DF  CW
-//Vector <int> e14({11, 13, 15, 16, 14, 12,0,0,0,0,0,0,0,0,0,0});   //  6L46DF CCW
-//variabili per mettere il nome del cilindro
 
 
 
@@ -199,9 +205,9 @@ void setup() {
   pinMode (button_D, INPUT_PULLUP);     //impostazione button_D come ingresso
   /*Parte Variabile Offset*/
   delay (500);
-  Wire.begin();
+ // Wire.begin();
   Serial.begin(38400);
-  SPI.begin();                                               // initialize SPI
+ // SPI.begin();                                               // initialize SPI
   printf_begin();
 
   radio.begin();                                             // initialize radio module
@@ -229,9 +235,9 @@ void setup() {
   lcd.init();                      // initialize the lcd
   lcd.backlight();
   lcd.setCursor(0, 0);
-  lcd.print("Guideblock");
+  lcd.print("     Fuel Pump     ");
   lcd.setCursor(0, 1);
-  lcd.print("TestBench v");
+  lcd.print("   Timing Checker   ");
   lcd.setCursor(12, 1);
   lcd.print(vers);
   delay(3000);
@@ -273,13 +279,12 @@ void loop() {
 
   // if (AA == 1) { // CONFIGURAZIONE sul motore
   Engine_setup();
-  lista();
+  //lcd.setCursor(0,0);
+  //lista();
+  mostra_cilindro();
   read_sensor();            // legge sensore pressione onboard
   //   read_serialmonitor();     //legge la seriale (per azzeramenti debug)
   pulsanti_AA();
-
-  PM = max(PressioneBar, PM);     // confronta la pressione istantanea con quella massima ed assegna a PM il valore piu alto
-  PT = PM / 2;                    // pressione Target = pressione Massima /2
 
   // parte radio e angolo
   if (millis() > tempo + 1000) {                              // y is always 1 so i can enter into Offset task,
@@ -337,9 +342,10 @@ void loop() {
     mostraangolo = 1;                         // but variable to 1 for refresh display next cycle
   } else {
     display_angolo();                         // if all ok display value
+    //mostra_cilindro_display();
   }
 
-  mostra_cilindro();
+ // mostra_cilindro();
   write_lcd_AA();
   //  }  // uso co doppio boot
 
@@ -389,12 +395,12 @@ void loop() {
   num2 = ((f1 << 8) | f0);
   }
 */
-
+/*
 void read_sensor() { // legge il sensore di pressione sul arduino master
   ValoreADC = analogRead(A0);
   PressioneBar = (ValoreADC - 97 ) * 0.0072763;
 }
-
+*/
 /*void read_serialmonitor() {  // legge i comandi da seriale più per debug che altro
   tasto = Serial.read();
   switch (tasto) {
@@ -497,6 +503,8 @@ void read_sensor() { // legge il sensore di pressione sul arduino master
   }
   }
 */
+
+/*
 void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valore
 
   if (PressioneBar != PMprec) {
@@ -515,6 +523,7 @@ void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valor
     lcd.print(PT);
   }
 }
+*/
 /*
   void write_lcdBG_bench() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
   lcd.setCursor(0, 0);
@@ -527,6 +536,8 @@ void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valor
   lcd.print("PT=     ");
   }
 */
+
+/*
 void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
   lcd.setCursor(0, 0);
   lista();
@@ -545,6 +556,8 @@ void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato 
 
 }
 
+*/
+/*
 void pulsanti_AA() {
   if (digitalRead(button_C) == LOW) {          // se premuto azzera il valore di PT (target)
     PT = 0;
@@ -554,6 +567,7 @@ void pulsanti_AA() {
     Serial.println("PULSANTE UP");
   }
 }
+*/
 /*
   void pulsanti_bench() {
 
@@ -578,7 +592,7 @@ void pulsanti_AA() {
   }
   }
 */
-
+/*
 void display_no_conn() {
 
   lcd.clear();
@@ -586,7 +600,8 @@ void display_no_conn() {
   lcd.println("   NO  CONNECTION    ");
   Serial.println("noconn");
 }
-
+*/
+/*
 void testo_richiesta_inserimento_offset() {
   lcd.clear();
   lcd.setCursor(0, 1);
@@ -594,7 +609,9 @@ void testo_richiesta_inserimento_offset() {
   lcd.setCursor(0, 2);
   lcd.println("   ANGOLO  VOLANO     ");
 }
+*/
 
+/*
 void display_angolo() {
   if (payload.num_sent != valoreangolocorrettoPrev)     // refresh display only if angle changes
   {
@@ -608,7 +625,9 @@ void display_angolo() {
     Serial.println(angstamp);
   }
 }
+*/
 
+/*
 void readButtonState() {
 
   byte readingUp = digitalRead(button_C); //Lettura ingresso digitale del pulsante di UP
@@ -636,7 +655,8 @@ void readButtonState() {
   }
 }
 
-
+*/
+/*
 void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come offset
 
   readButtonState();  //Lettura stato buttons con controllo antirimbalzo
@@ -675,7 +695,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
         lcd.print("                    ");    //disegnare caratteri vuoti dovrebbe essere piu veloce del clear
         lcd.setCursor(0, 3);
         lcd.print("                    ");
-      */
+      *//*
       lcd.clear();
       lcd.setCursor(0, 1);
       lcd.print("Inserire Offset:");
@@ -691,6 +711,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
     repeatEnable = LOW;
   }
 }
+*/
 /*
   void banchetto() {  //CONFIGURAZIONE BANCO
 
@@ -708,6 +729,8 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
   write_lcd_bench();
   }
 */
+
+/*
 void Engine_setup() {
 
   while ((engine_setup == 0) || (timing_setup == 0)) {
@@ -839,8 +862,8 @@ void Engine_setup() {
   }
 }
 
-
-
+*/
+/*
 void lista() {
   switch (engine) {
 
@@ -951,7 +974,8 @@ void lista() {
       break;
   };
 }
-
+*/
+/*
 void mostra_cilindro() {
 
   if (motore.cylinder > 10) {
@@ -961,14 +985,14 @@ void mostra_cilindro() {
       Serial.print(mod);
 
       if (mod == 1.0)  {                                          // 1 3 5  sui cilindri dispari aggiungo il delta tra le bancate (50°)
-        scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*/;
+        scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*//*;
         Serial.print(" cilindro = A");
         cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
         Serial.print(cyl);
 
       }
       else {                                                      // 2 4 6  cilindri pari
-        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + 50/*- timing_float*/;
+        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + 50/*- timing_float*//*;
         Serial.print(" cilindro = B");
         cyl = motore.e[i - 1] - 20;                       // devo modificare a senconda dell'engine mettendo il array corretto
         Serial.print(cyl);
@@ -981,8 +1005,8 @@ void mostra_cilindro() {
   else  // se motore linea quindi cilindri minori di 10
   {
     for ( byte i = 1; i < motore.cylinder + 1; i++) {
-      // scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*/;
-      scoppio = (i - 1) * motore.fire_spacing  /*- timing_float*/;
+      // scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*//*;
+      scoppio = (i - 1) * motore.fire_spacing  /*- timing_float*//*;
       Serial.print(" cilindro = A");
       cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
       Serial.print(cyl);
@@ -993,3 +1017,4 @@ void mostra_cilindro() {
 
   Serial.println("scritti tutti");
 }
+*/
