@@ -1,5 +1,7 @@
 void mostra_q() {
+  //h = motore.e []
   Serial.println("sono nel mostra_q");  //DEBUG
+/*
   float inf = motore.l[h - 1];                  //  impostto dinamicamente il  limite inferiore della finestra di visualizzazione
   float sup = motore.h[h - 1];                  //  impostto dinamicamente il  limite superiore della finestra di visualizzazione
   Serial.print("h= ");      //DEBUG
@@ -10,8 +12,29 @@ void mostra_q() {
   Serial.println(sup);      //DEBUG
   Serial.print("angolo ");      //DEBUG
   Serial.println(angstamp);      //DEBUG
+  */
+  Serial.print(F("funzioneA "));      //DEBUG
+  auto binA = map(angstamp, motore.fire_spacing/2.0-120, 720 + motore.fire_spacing/2.0 + 120, 1, motore.index + 1 + 2);
+  Serial.println(binA);      //DEBUG
+  Serial.print("funzioneB ");      //DEBUG
+  auto binB = map(angstamp, 50 + motore.fire_spacing/2.0 - 120, 770 + motore.fire_spacing/2.0 + 120, 1, motore.index + 1 + 2);
+  Serial.println(binB);      //DEBUG
 
-
+  // Questo andra' salvato in array invece che calcolato, se c'e' memoria disponibile
+  auto nominalA = -120 + motore.fire_spacing*binA;
+  Serial.println(nominalA);
+  if (abs(nominalA - angstamp) < range) {
+    Serial.print("QUESTO LO STAMPO A ");
+    Serial.println(motore.e[2*(binA-1)]);
+    
+  }
+  auto nominalB = -120 + 50 + motore.fire_spacing*binB;
+  Serial.println(nominalB);
+  if (abs(nominalB - angstamp) < range) {
+    Serial.print("QUESTO LO STAMPO B ");
+    Serial.println(motore.e[2*(binB-1)+1]);
+  }
+/* 
   if ((angstamp >= inf  ) && ( angstamp <= sup )) {
     Serial.println("sono nel if");       //DEBUG
     if (motore.cylinder > 10) {             // se il motre è un V
@@ -50,5 +73,8 @@ void mostra_q() {
   if (angstamp == sup) {                    // condizione per modificare la finestra passando al cilindro dopo 
     h++;
   };
+  if (h < 1) h = motore.cylinder;
+  if (h > motore.cylinder) h = 1;
   Serial.println("esco da_q");       //DEBUG
+  */
 }

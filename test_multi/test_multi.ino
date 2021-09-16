@@ -91,7 +91,7 @@ payload_t payload;
 long valoreangolocorrettoPrev;  // needed for data verify
 byte mostraangolo = 0;           // needed for redisplay after lost conn
 float angprint;                 // needed for to convert long data into float (we receive a long from the net)
-float angstamp;                 // needed for to convert long data into float (we receive a long from the net)
+float angstamp = 0.0;                 // needed for to convert long data into float (we receive a long from the net)
 
 payload_t data;                 // create to arrays payload_t data
 byte counter ;                   // Array defined for validation of data (ses main loop)
@@ -161,21 +161,23 @@ struct motore {
   byte cylinder = 0;
   byte fire_spacing = 0;
   byte cw = 0;
-  int e[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  byte index = 0;
+  char *e[16];
+//  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  // int *aa;
 };
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
 byte range = 2; // tolleranza di visualizzazione in gradi
-
 byte e1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e4[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e5[16] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24, 0, 0, 0, 0}; // 12V46DF  CW
+//byte e5[16] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24, 0, 0, 0, 0}; // 12V46DF  CW
+char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"}; // 12V46DF  CW
 byte e6[16] = {11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21, 0, 0, 0, 0}; // 12V46DF CCW
 byte e7[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e8[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -280,7 +282,7 @@ void loop() {
   // mostra_array();
   mostra_q();
   read_sensor();            // legge sensore pressione onboard
-  // read_serialmonitor();     //legge la seriale (per azzeramenti debug)
+ //read_serialmonitor();     //legge la seriale (per azzeramenti debug)
   pulsanti_AA();
   condition_for_offset();
 
