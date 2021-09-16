@@ -15,6 +15,10 @@ void mostra_cilindro_display() {
         lcd.print(" A");
         lcd.setCursor(12, 2);
         lcd.print(cyl);
+        q= (2*angstamp/motore.fire_spacing)+1;
+        Serial.print("q =");
+        Serial.println(q);
+        
       }
       else {                                                      // 2 4 6  cilindri pari
         scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + 50/*- timing_float*/;

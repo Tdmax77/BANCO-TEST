@@ -7,9 +7,8 @@ void Engine_setup() {
     //   lcd.setCursor(6, 1);
     //   lista();
 
-    testo_richiesta_inserimento_Engine();
+    testo_richiesta_inserimento_Engine();           //chiedo numero dell'engine
     while (digitalRead(button_B) == HIGH) {
-      //  testo_richiesta_inserimento_Engine();
       readButtonState();  //Lettura stato buttons con controllo antirimbalzo
 
       if (buttonUpState == HIGH || buttonDownState == HIGH) {
@@ -39,8 +38,8 @@ void Engine_setup() {
           if (engine > engineMax) engine = engineMax;
           if (engine < engineMin) engine = engineMin;
           Serial.print("engine ");
-          Serial.println(engine);
-          lcd.setCursor(4, 1);
+          Serial.println(engine);           
+          lcd.setCursor(4, 1);          
           lista();
         }
       } else {

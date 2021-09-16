@@ -9,7 +9,8 @@
    V 1.10 dual boot funzionante, sembra tutto ok
    V1.11  sto aggiungendo la confiogurazione engine ed ho messo il display a 2004 al posto del 1602
    V1.12 aggiungendo la scrittura del cilindro
-   v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta 
+   v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta
+   v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
 */
 
 //#include <Wire.h>
@@ -21,7 +22,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.14; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.15; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -62,11 +63,10 @@ float PTprec = 0;         //Pressione Target
 // variabili sensore pressione
 
 
-/*
-  // variabile per seriale debug
-  char tasto = 0;
-  // variabile per seriale debug
-*/
+// variabile per seriale debug
+char tasto = 0;
+// variabile per seriale debug
+
 
 
 /* variabile display*/
@@ -161,7 +161,7 @@ struct motore {
   byte cylinder = 0;
   byte fire_spacing = 0;
   byte cw = 0;
-  byte e[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int e[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -169,7 +169,7 @@ struct motore {
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
-byte range = 2;
+byte range = 2; // tolleranza di visualizzazione in gradi
 
 byte e1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -186,7 +186,8 @@ byte e12[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte e13[16] = {11, 12, 14, 16, 15, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF  CW
 byte e14[16] = {11, 13, 15, 16, 14, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF CCW
 
-
+float q = 0;
+byte h = 2;
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -205,9 +206,9 @@ void setup() {
   pinMode (button_D, INPUT_PULLUP);     //impostazione button_D come ingresso
   /*Parte Variabile Offset*/
   delay (500);
- // Wire.begin();
+  //Wire.begin();
   Serial.begin(38400);
- // SPI.begin();                                               // initialize SPI
+  // SPI.begin();                                               // initialize SPI
   printf_begin();
 
   radio.begin();                                             // initialize radio module
@@ -234,14 +235,14 @@ void setup() {
   /* parte display i2c */
   lcd.init();                      // initialize the lcd
   lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("     Fuel Pump     ");
-  lcd.setCursor(0, 1);
-  lcd.print("   Timing Checker   ");
-  lcd.setCursor(12, 1);
-  lcd.print(vers);
-  delay(3000);
-  lcd.clear();
+  /*  lcd.setCursor(0, 0);
+    lcd.print("     Fuel Pump     ");
+    lcd.setCursor(0, 1);
+    lcd.print("   Timing Checker   ");
+    lcd.setCursor(12, 2);
+    lcd.print(vers);
+    delay(3000);
+  */  lcd.clear();
 
 
 
@@ -257,6 +258,9 @@ void setup() {
      //   write_lcdBG_bench();
     }
   */
+  Engine_setup();
+  calcolo_array(); // calcola gli array min e max
+
 }
 
 
@@ -271,62 +275,19 @@ void setup() {
 void loop() {
 
 
-
   // if (AA == 0) banchetto();
-
-
-
-
   // if (AA == 1) { // CONFIGURAZIONE sul motore
-  Engine_setup();
-  //lcd.setCursor(0,0);
-  //lista();
-  mostra_cilindro();
+  // mostra_array();
+  mostra_q();
   read_sensor();            // legge sensore pressione onboard
-  //   read_serialmonitor();     //legge la seriale (per azzeramenti debug)
+  // read_serialmonitor();     //legge la seriale (per azzeramenti debug)
   pulsanti_AA();
-
-  // parte radio e angolo
-  if (millis() > tempo + 1000) {                              // y is always 1 so i can enter into Offset task,
-    y = 1;                                                   // when Offset is setted y become 0 so the Offset task can't loop.
-  } else {                                                   // after 100 milliseconds y become 1 so it is possible to execute Offset task.
-    y = 0;
-  }
-
+  condition_for_offset();
 
   network.update();           // looking for news on the network
   delay(5);                   // needed at least 1 ms of delay or display stay in NOT CONN state (i don't know why ...
-  while ( network.available() ) {                             // if network is up  ... I need at least one slave active for to keep active the network, otherwise no network will be available
-    if (mostraangolo == 1) {                                  // after a lost connection it need to refresh display also if value is not changed
-      lcd.setCursor(8, 1);
-      lcd.print(angstamp);
-      mostraangolo = 0;                                     // reset value
-    }
 
-    byte cnt (0);                                             // reset counter
-    RF24NetworkHeader header;                                // declare the address of this node: every packet sent from slaves to header will be readed from this node (00, the master)
-    network.read(header, &payload, sizeof(payload));         // read the packet netwotk sent for this node
-    size_t node_id = header.from_node;                       // create a variable node_id that stores the source of the packet ( who is sending it to me? COMP1 with 01 , COMP2 with 02 and so on..
-    if ((payload.OffsetReq == 5) && (payload.VO = 9999) && (y == 1)) {     // if Offset is request i start the Offset task
-      testo_richiesta_inserimento_offset();                                // ask for offset
-      while (digitalRead(button_B) == HIGH )                             // insert value and wait for OK button pressed
-      {
-        //lcd.clear();
-        PROCEDURA_OFFSET();
-        //read_serialmonitor();// Offset procedure
-      }
-      payload.OffsetReq = 0;                                                // reset the Offset request
-      payload.VO = var;                                                     // assign offset value to payload
-      RF24NetworkHeader header5(05);                                        // define encoder network address
-      network.write(header5, &payload, sizeof(payload));                    // send payload to encoder
-      delay(100);                                                           // little delay
-      tempo = millis();                                                     // set variable for y status
-      y = 0;                                                                // put y to 0
-      write_lcdBG_AA();
-    } else {
-      write_lcdBG_AA();
-    }
-  }
+  While_network();  // receive data from encoder, if needed start offset routine and drawing background
 
   if (data.control != payload.control) {      // if control readed from network is different from control stored i assume that the packet is new, so the slave is alive and the data is valid
     data.num_sent = payload.num_sent;         // so i store readed values in data.num_sent ( this is encoder value)
@@ -342,22 +303,23 @@ void loop() {
     mostraangolo = 1;                         // but variable to 1 for refresh display next cycle
   } else {
     display_angolo();                         // if all ok display value
-    //mostra_cilindro_display();
+
   }
 
- // mostra_cilindro();
-  write_lcd_AA();
+
+  write_pressure();
   //  }  // uso co doppio boot
 
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////
-
-
 /*
+  //////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
+
+
+  /*
   void read_mitutoyo() {  //legge il comparatore collegato sul arduino master
   digitalWrite(req, HIGH);      // genera set request portando il pin 11 a HIGH
   for (i = 0; i < 13; i++ ) {
@@ -395,54 +357,23 @@ void loop() {
   num2 = ((f1 << 8) | f0);
   }
 */
-/*
+
 void read_sensor() { // legge il sensore di pressione sul arduino master
   ValoreADC = analogRead(A0);
   PressioneBar = (ValoreADC - 97 ) * 0.0072763;
 }
-*/
-/*void read_serialmonitor() {  // legge i comandi da seriale più per debug che altro
+
+void read_serialmonitor() {  // legge i comandi da seriale più per debug che altro
   tasto = Serial.read();
   switch (tasto) {
     case '1':
       radio.printDetails();
       break;
-    case '2':
-      digitalWrite(Arduino2_PWR, HIGH);
-      Serial.print("stato Arduino2_PWR ");
-      Serial.println(Arduino2_PWR);
-      break;
-    case '5':
-      digitalWrite(Arduino2_PWR, LOW);
-      Serial.print("stato Arduino2_PWR ");
-      Serial.println(Arduino2_PWR);
-      break;
-
     case '3':
       Serial.println(payload.OffsetReq);
       Serial.println(payload.VO );
       Serial.println(y );
       Serial.println("///////////////////////////////////////////////////////////////////////////");
-      break;
-    case 'M':
-      PM = 0;
-      break;
-    case 't':
-      PT = 0;
-      break;
-    case 'T':
-      PT = 0;
-      break;
-    case 'a':
-      PT = 0;
-      PM = 0;
-      break;
-    case 's':
-      Serial.print("stato Arduino2_PWR ");
-      Serial.println(Arduino2_PWR);
-      break;
-    case 'r':
-      payload.OffsetReq = 5;
       break;
     case 'c':
       lcd.clear();
@@ -450,9 +381,14 @@ void read_sensor() { // legge il sensore di pressione sul arduino master
     case 'b':
       write_lcdBG_AA();
       break;
+    case 'h':
+      h++;
+      break;
+    case 'g':
+      h--;
+      break;
   }
-  }*/
-
+}
 
 /*void write_serial() {
   Serial.print(" Comp1= ");
@@ -504,8 +440,7 @@ void read_sensor() { // legge il sensore di pressione sul arduino master
   }
 */
 
-/*
-void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valore
+void write_pressure() {     // scrive i dati della pressione
 
   if (PressioneBar != PMprec) {
     PMprec = PM;
@@ -523,7 +458,6 @@ void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valor
     lcd.print(PT);
   }
 }
-*/
 /*
   void write_lcdBG_bench() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
   lcd.setCursor(0, 0);
@@ -537,12 +471,11 @@ void write_lcd_AA() {     // scrive i dati sul display solo se cambiano di valor
   }
 */
 
-/*
 void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
   lcd.setCursor(0, 0);
   lista();
   lcd.setCursor(12, 0);
-  lcd.print("Tim");
+  lcd.print("T= ");
   lcd.setCursor(15, 0);
   lcd.print(timing_float);
   lcd.setCursor(0, 1);
@@ -556,8 +489,6 @@ void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato 
 
 }
 
-*/
-/*
 void pulsanti_AA() {
   if (digitalRead(button_C) == LOW) {          // se premuto azzera il valore di PT (target)
     PT = 0;
@@ -567,7 +498,7 @@ void pulsanti_AA() {
     Serial.println("PULSANTE UP");
   }
 }
-*/
+
 /*
   void pulsanti_bench() {
 
@@ -593,26 +524,26 @@ void pulsanti_AA() {
   }
 */
 /*
-void display_no_conn() {
+  void display_no_conn() {
 
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.println("   NO  CONNECTION    ");
   Serial.println("noconn");
-}
+  }
 */
 /*
-void testo_richiesta_inserimento_offset() {
+  void testo_richiesta_inserimento_offset() {
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.println("  INSERIRE  VALORE   ");
   lcd.setCursor(0, 2);
   lcd.println("   ANGOLO  VOLANO     ");
-}
+  }
 */
 
 /*
-void display_angolo() {
+  void display_angolo() {
   if (payload.num_sent != valoreangolocorrettoPrev)     // refresh display only if angle changes
   {
     valoreangolocorrettoPrev = payload.num_sent;        // read angle value
@@ -624,10 +555,9 @@ void display_angolo() {
     lcd.print(angstamp);
     Serial.println(angstamp);
   }
-}
+  }
 */
 
-/*
 void readButtonState() {
 
   byte readingUp = digitalRead(button_C); //Lettura ingresso digitale del pulsante di UP
@@ -654,10 +584,8 @@ void readButtonState() {
     DownDebounceTime = millis();
   }
 }
-
-*/
 /*
-void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come offset
+  void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come offset
 
   readButtonState();  //Lettura stato buttons con controllo antirimbalzo
 
@@ -695,7 +623,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
         lcd.print("                    ");    //disegnare caratteri vuoti dovrebbe essere piu veloce del clear
         lcd.setCursor(0, 3);
         lcd.print("                    ");
-      *//*
+*//*
       lcd.clear();
       lcd.setCursor(0, 1);
       lcd.print("Inserire Offset:");
@@ -710,7 +638,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
     timerPauseRepeat = millis();
     repeatEnable = LOW;
   }
-}
+  }
 */
 /*
   void banchetto() {  //CONFIGURAZIONE BANCO
@@ -731,7 +659,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
 */
 
 /*
-void Engine_setup() {
+  void Engine_setup() {
 
   while ((engine_setup == 0) || (timing_setup == 0)) {
 
@@ -860,11 +788,11 @@ void Engine_setup() {
       //   lcd.clear();
     }
   }
-}
+  }
 
 */
 /*
-void lista() {
+  void lista() {
   switch (engine) {
 
     case 1:
@@ -973,10 +901,10 @@ void lista() {
       };
       break;
   };
-}
+  }
 */
 /*
-void mostra_cilindro() {
+  void calcolo_array() {
 
   if (motore.cylinder > 10) {
     for ( byte i = 1; i < motore.cylinder + 1; i++) {                    // per tutti i cilindri verifico se sono pari o dispari
@@ -1016,5 +944,5 @@ void mostra_cilindro() {
   }
 
   Serial.println("scritti tutti");
-}
+  }
 */

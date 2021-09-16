@@ -35,7 +35,7 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
       lcd.print(var);
       lcd.setCursor(10, 2);
       lcd.print("Gradi");
-      lcd.setCursor(0,3);
+      lcd.setCursor(0, 3);
       lcd.print(" -    ok    +       ");
       delay(200);
     }
@@ -44,5 +44,16 @@ void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come o
     timerPauseRepeat = millis();
     repeatEnable = LOW;
   }
-  
+
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+
+void  condition_for_offset() {
+  if (millis() > tempo + 1000) {                              // y is always 1 so i can enter into Offset task,
+    y = 1;                                                   // when Offset is setted y become 0 so the Offset task can't loop.
+  } else {                                                   // after 100 milliseconds y become 1 so it is possible to execute Offset task.
+    y = 0;
+  }
 }

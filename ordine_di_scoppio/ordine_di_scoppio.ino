@@ -1,10 +1,10 @@
-#include <Wire.h>
+//#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include <SPI.h>
-#include <RF24Network.h>
-#include <RF24.h>
+//#include <SPI.h>
+//#include <RF24Network.h>
+//#include <RF24.h>
 #include <printf.h>
-#include <math.h>
+//#include <math.h>
 
 int e1[12]={11,21,15,25,13,23,16,26,12,22,14,24};
 int e2[12]={11,24,14,22,12,26,16,23,13,25,15,21};

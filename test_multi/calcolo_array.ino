@@ -1,4 +1,4 @@
-void mostra_cilindro() {
+void calcolo_array() {
 
   if (motore.cylinder > 10) {
     for ( byte i = 1; i < motore.cylinder + 1; i++) {                    // per tutti i cilindri verifico se sono pari o dispari
@@ -44,12 +44,13 @@ void mostra_cilindro() {
   }
 
   for ( byte i = 1; i < motore.cylinder + 1; i++) {
-    Serial.print("nominale ");
-    Serial.println(motore.n[i - 1]);
+    
     Serial.print("superiore ");
-    Serial.println(motore.h[i - 1]);
-    Serial.print("inferiore ");
-    Serial.println(motore.l[i - 1]);
+    Serial.print(motore.h[i - 1]);
+    Serial.print("   nominale ");
+    Serial.print(motore.n[i - 1]);
+    Serial.print("   inferiore ");
+    Serial.print(motore.l[i - 1]);
     Serial.println();
   }
   Serial.println("scritti tutti");

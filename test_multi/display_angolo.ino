@@ -6,8 +6,8 @@ void display_angolo() {
     angstamp = angprint / 100;                         // add the comma
     // lcd.setCursor(5, 2);
     //lcd.print("      ");
-//    lcd.setCursor(5, 2);
-//    lcd.print(angstamp);
+   lcd.setCursor(5, 2);
+   lcd.print(angstamp);
     Serial.println(angstamp);
   }
 }
