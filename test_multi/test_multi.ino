@@ -22,7 +22,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.15; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.16; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -163,6 +163,7 @@ struct motore {
   byte cw = 0;
   byte index = 0;
   char *e[16];
+  byte delta = 0;
 //  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 //  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 //  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -172,21 +173,20 @@ motore motore;
 float scoppio = 0;
 byte cyl = 0;
 byte range = 2; // tolleranza di visualizzazione in gradi
-byte e1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e4[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//byte e5[16] = {11, 21, 15, 25, 13, 23, 16, 26, 12, 22, 14, 24, 0, 0, 0, 0}; // 12V46DF  CW
-char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"}; // 12V46DF  CW
-byte e6[16] = {11, 24, 14, 22, 12, 26, 16, 23, 13, 25, 15, 21, 0, 0, 0, 0}; // 12V46DF CCW
-byte e7[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e8[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e9[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e10[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e11[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e12[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-byte e13[16] = {11, 12, 14, 16, 15, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF  CW
-byte e14[16] = {11, 13, 15, 16, 14, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};   //  6L46DF CCW
+char *e1[] = {"A1","B1","A3","B3","A2","B2","A5","B5","A8","B8","A6","B6","A7","B7","A4","B4"};       // 16V46DF  CW
+char *e2[] = {"A1","B4","A4","B7","A7","B6","A6","B8","A8","B5","A5","B2","A2","B3","A3","B1"};       // 16V46DF  CW
+char *e3[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
+char *e4[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
+char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"};         // 12V46DF  CW
+char *e6[] = {"A1","B4","A4","B2","A2","B6","A6","B3","A3","B5","A5","B1"};         // 12V46DF CCW
+char *e7[] = {"A1","A5","A9","A4","A7","A8","A2","A3","A6"};                           // 9L46DF  CW
+char *e8[] = {"A1","A6","A3","A2","A8","A7","A4","A9","A5"};                           // 9L46DF CCW
+char *e9[] = {"A1","A6","A2","A4","A8","A3","A7","A5"};              // 8L46DF  CW
+char *e10[] = {"A1","A5","A7","A3","A8","A4","A2","A6"};            // 8L46DF CCW
+char *e11[] = {"A-","A-","A-","A-","A-","A-","A-",};           // 7L46DF  CW
+char *e12[] = {"A-","A-","A-","A-","A-","A-","A-",};          // 7L46DF CCW
+char *e13[] = {"A1","A2","A4","A6","A5","A3"};     // 6L46DF  CW
+char *e14[] = {"A1","A3","A5","A6","A4","A2"};     // 6L46DF CCW
 
 float q = 0;
 byte h = 2;
@@ -216,7 +216,7 @@ void setup() {
   radio.begin();                                             // initialize radio module
   radio.setDataRate(RF24_250KBPS);
   radio.printDetails();
-  Serial.print("Version ");
+  Serial.print(F("Version "));
   Serial.println(vers);
   network.begin(/*channel*/ 110, /*node address*/ this_node); // start network
 
@@ -455,7 +455,7 @@ void write_pressure() {     // scrive i dati della pressione
   if (PT >= PTprec) {
     PTprec = PT;
     lcd.setCursor(12, 1);
-    lcd.print("       ");
+    lcd.print(F("       "));
     lcd.setCursor(12, 1);
     lcd.print(PT);
   }
@@ -477,17 +477,17 @@ void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato 
   lcd.setCursor(0, 0);
   lista();
   lcd.setCursor(12, 0);
-  lcd.print("T= ");
+  lcd.print(F("T= "));
   lcd.setCursor(15, 0);
   lcd.print(timing_float);
   lcd.setCursor(0, 1);
-  lcd.print("P= ");
+  lcd.print(F("P= "));
   lcd.setCursor(8, 1);
-  lcd.print("Pt= ");
+  lcd.print(F("Pt= "));
   lcd.setCursor(0, 2);
-  lcd.print("Ang= ");
+  lcd.print(F("Ang= "));
   lcd.setCursor(0, 3);
-  lcd.print("  -    -   rst    - ");
+  lcd.print(F("  -    -   rst    - "));
 
 }
 
@@ -497,7 +497,7 @@ void pulsanti_AA() {
     PTprec = 0;
     PM = 0;
     PressioneBar = 0;
-    Serial.println("PULSANTE UP");
+    Serial.println(F("PULSANTE UP"));
   }
 }
 

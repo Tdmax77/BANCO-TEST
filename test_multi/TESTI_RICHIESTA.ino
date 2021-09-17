@@ -32,5 +32,5 @@ void display_no_conn() {
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.print("   NO  CONNECTION    ");
-  Serial.println("noconn");
+  Serial.println(F("noconn"));
 }

@@ -37,7 +37,7 @@ void Engine_setup() {
           repeatEnable = HIGH;
           if (engine > engineMax) engine = engineMax;
           if (engine < engineMin) engine = engineMin;
-          Serial.print("engine ");
+          Serial.print(F("engine "));
           Serial.println(engine);           
           lcd.setCursor(4, 1);          
           lista();
@@ -49,14 +49,14 @@ void Engine_setup() {
       }
     }
     if (digitalRead(button_B) == LOW) {
-      Serial.println("premuto pulsante OK");
+      Serial.println(F("premuto pulsante OK"));
       engine_setup = 1 ;
       delay(200);
-      Serial.print("engine setup ");
+      Serial.print(F("engine setup "));
       Serial.println(engine_setup);
     }     
     testo_richiesta_inserimento_Timing();
-    Serial.print("timing setup ");
+    Serial.print(F("timing setup "));
     Serial.println(timing_setup);
    
     while ((digitalRead(button_B) == HIGH) && timing_setup == 0) {
@@ -91,7 +91,7 @@ void Engine_setup() {
           timing_float = timing2 / 100;
           lcd.setCursor (8, 1);
           lcd.print(timing_float);
-          Serial.print("timing =");
+          Serial.print(F("timing ="));
           Serial.println(timing_float);
         }
       } else {
