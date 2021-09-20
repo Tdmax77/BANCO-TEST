@@ -11,9 +11,6 @@
    V1.12 aggiungendo la scrittura del cilindro
    v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta
    v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
-   V1.15 convertiti vettori in puntatori e strighe in (F)
-   V1.16
-   
 */
 
 //#include <Wire.h>
@@ -22,10 +19,10 @@
 #include <RF24Network.h>
 #include <RF24.h>
 #include <printf.h>
+//#include <Vector.h>
 
 
-
-const float vers = 1.17; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.16; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -162,14 +159,14 @@ int counterprec;
 // variabili per mettere il nome del cilindro
 struct motore {
   byte cylinder = 0;
-  int fire_spacing = 0;
+  byte fire_spacing = 0;
   byte cw = 0;
   byte index = 0;
   char *e[16];
-  int delta = 0;
+  byte delta = 0;
 //  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 //  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+//  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   // int *aa;
 };
 motore motore;
@@ -177,9 +174,9 @@ float scoppio = 0;
 byte cyl = 0;
 byte range = 2; // tolleranza di visualizzazione in gradi
 char *e1[] = {"A1","B1","A3","B3","A2","B2","A5","B5","A8","B8","A6","B6","A7","B7","A4","B4"};       // 16V46DF  CW
-char *e2[] = {"A1","B4","A4","B7","A7","B6","A6","B8","A8","B5","A5","B2","A2","B3","A3","B1"};       // 16V46DF  CCW
-char *e3[] = {"A1","B1","A3","B3","A5","B5","A7","B7","A6","B6","A4","B4","A3","B3",};       // 14V46DF  CW
-char *e4[] = {"A1","B2","A2","B4","A4","B6","A6","B7","A7","B5","A5","B3","A3","B1",};       // 14V46DF  CCW
+char *e2[] = {"A1","B4","A4","B7","A7","B6","A6","B8","A8","B5","A5","B2","A2","B3","A3","B1"};       // 16V46DF  CW
+char *e3[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
+char *e4[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
 char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"};         // 12V46DF  CW
 char *e6[] = {"A1","B4","A4","B2","A2","B6","A6","B3","A3","B5","A5","B1"};         // 12V46DF CCW
 char *e7[] = {"A1","A5","A9","A4","A7","A8","A2","A3","A6"};                           // 9L46DF  CW
@@ -265,7 +262,7 @@ void setup() {
   */
   Engine_setup();
   calcolo_array(); // calcola gli array min e max
-mostra_cilindro_display();
+
 }
 
 
@@ -282,7 +279,7 @@ void loop() {
 
   // if (AA == 0) banchetto();
   // if (AA == 1) { // CONFIGURAZIONE sul motore
-   
+  // mostra_array();
   mostra_q();
   read_sensor();            // legge sensore pressione onboard
  //read_serialmonitor();     //legge la seriale (per azzeramenti debug)
