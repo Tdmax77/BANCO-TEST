@@ -11,10 +11,14 @@
    V1.12 aggiungendo la scrittura del cilindro
    v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta
    v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
+   v1.17 sembra andare tutto compreso il 14v , da ottimizzare 
+   
 */
 
 //#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+//#include <Wire.h>
+//#include <LiquidTWI.h>
 //#include <SPI.h>
 #include <RF24Network.h>
 #include <RF24.h>
@@ -22,7 +26,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.16; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.17; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -70,6 +74,7 @@ char tasto = 0;
 
 
 /* variabile display*/
+//LiquidTWI lcd(0);
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 /* variabile display*/
 
@@ -131,12 +136,12 @@ byte readingDown = 0;  //Lettura ingresso digitale del pulsante di Down
 
 
 /* variabili per setup motore*/
-byte engine = 1;  //variabile da aumentare o diminuire come valore            serve per setup motore
+byte engine = 0;  //variabile da aumentare o diminuire come valore            serve per setup motore
 const byte engineMax = 14; //limite massimo valore della variabile
 const byte engineMin = 1; //limite minimo valore della variabile
 byte engine_setup = 0;
 
-int timing = 1800;  //variabile da aumentare o diminuire come valore            serve per setup motore
+int timing = 1999;  //variabile da aumentare o diminuire come valore            serve per setup motore
 float timing2 = 0;
 const int timingMax = 3000; //limite massimo valore della variabile
 const int timingMin = 1000; //limite minimo valore della variabile
@@ -159,37 +164,37 @@ int counterprec;
 // variabili per mettere il nome del cilindro
 struct motore {
   byte cylinder = 0;
-  byte fire_spacing = 0;
+  int fire_spacing = 0;
   byte cw = 0;
   byte index = 0;
-  char *e[16];
-  byte delta = 0;
-//  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  char *e[17];
+  int delta = 0;
+  //  int h[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  //  int l[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  //  int n[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   // int *aa;
 };
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
 byte range = 2; // tolleranza di visualizzazione in gradi
-char *e1[] = {"A1","B1","A3","B3","A2","B2","A5","B5","A8","B8","A6","B6","A7","B7","A4","B4"};       // 16V46DF  CW
-char *e2[] = {"A1","B4","A4","B7","A7","B6","A6","B8","A8","B5","A5","B2","A2","B3","A3","B1"};       // 16V46DF  CW
-char *e3[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
-char *e4[] = {"A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-","A-","B-",};       // 14V46DF  CW
-char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"};         // 12V46DF  CW
-char *e6[] = {"A1","B4","A4","B2","A2","B6","A6","B3","A3","B5","A5","B1"};         // 12V46DF CCW
-char *e7[] = {"A1","A5","A9","A4","A7","A8","A2","A3","A6"};                           // 9L46DF  CW
-char *e8[] = {"A1","A6","A3","A2","A8","A7","A4","A9","A5"};                           // 9L46DF CCW
-char *e9[] = {"A1","A6","A2","A4","A8","A3","A7","A5"};              // 8L46DF  CW
-char *e10[] = {"A1","A5","A7","A3","A8","A4","A2","A6"};            // 8L46DF CCW
-char *e11[] = {"A-","A-","A-","A-","A-","A-","A-",};           // 7L46DF  CW
-char *e12[] = {"A-","A-","A-","A-","A-","A-","A-",};          // 7L46DF CCW
-char *e13[] = {"A1","A2","A4","A6","A5","A3"};     // 6L46DF  CW
-char *e14[] = {"A1","A3","A5","A6","A4","A2"};     // 6L46DF CCW
+char *e1[] = {"A1", "B1", "A3", "B3", "A2", "B2", "A5", "B5", "A8", "B8", "A6", "B6", "A7", "B7", "A4", "B4"}; // 16V46DF  CW
+char *e2[] = {"A1", "B4", "A4", "B7", "A7", "B6", "A6", "B8", "A8", "B5", "A5", "B2", "A2", "B3", "A3", "B1"}; // 16V46DF  CW
+char *e3[] = {"A1", "B1", "A3", "B3", "A5", "B5", "A7", "B7", "A6", "B6", "A4", "B4", "A1", "B1",}; // 14V46DF  CW
+char *e4[] = {"A1", "B2", "A2", "B4", "A4", "B6", "A6", "B7", "A7", "B8", "A8", "B3", "A3", "B1",}; // 14V46DF  CCW
+char *e5[] = {"A1", "B1", "A5", "B5", "A3", "B3", "A6", "B6", "A2", "B2", "A4", "B4"}; // 12V46DF  CW
+char *e6[] = {"A1", "B4", "A4", "B2", "A2", "B6", "A6", "B3", "A3", "B5", "A5", "B1"}; // 12V46DF CCW
+char *e7[] = {"A1", "A5", "A9", "A4", "A7", "A8", "A2", "A3", "A6"};                   // 9L46DF  CW
+char *e8[] = {"A1", "A6", "A3", "A2", "A8", "A7", "A4", "A9", "A5"};                   // 9L46DF CCW
+char *e9[] = {"A1", "A6", "A2", "A4", "A8", "A3", "A7", "A5"};       // 8L46DF  CW
+char *e10[] = {"A1", "A5", "A7", "A3", "A8", "A4", "A2", "A6"};     // 8L46DF CCW
+char *e11[] = {"A1", "A3", "A5", "A7", "A6", "A4", "A2",};     // 7L46DF  CW
+char *e12[] = {"A1", "A2", "A4", "A6", "A7", "A5", "A3",};    // 7L46DF CCW
+char *e13[] = {"A1", "A2", "A4", "A6", "A5", "A3"}; // 6L46DF  CW
+char *e14[] = {"A1", "A3", "A5", "A6", "A4", "A2"}; // 6L46DF CCW
 
 float q = 0;
-byte h = 2;
+//byte h = 2;
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -235,8 +240,10 @@ void setup() {
 
 
   /* parte display i2c */
-  lcd.init();                      // initialize the lcd
-  lcd.backlight();
+  // lcd.begin(20,4);
+  // lcd.setBacklight(LOW);
+  lcd.init();                      // liquid
+  lcd.backlight();                  //liquid
   /*  lcd.setCursor(0, 0);
     lcd.print("     Fuel Pump     ");
     lcd.setCursor(0, 1);
@@ -244,11 +251,11 @@ void setup() {
     lcd.setCursor(12, 2);
     lcd.print(vers);
     delay(3000);
-  */  lcd.clear();
+    //  lcd.clear();
 
 
 
-  /*
+    /*
     byte bypass = digitalRead(button_D);   // per attivare il doppio menu
 
     if (bypass == HIGH) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità montaggio
@@ -282,7 +289,7 @@ void loop() {
   // mostra_array();
   mostra_q();
   read_sensor();            // legge sensore pressione onboard
- //read_serialmonitor();     //legge la seriale (per azzeramenti debug)
+  //read_serialmonitor();     //legge la seriale (per azzeramenti debug)
   pulsanti_AA();
   condition_for_offset();
 
@@ -657,294 +664,5 @@ void readButtonState() {
   //write_serial();                 // scrive sulla seriale i dati
   //write_lcdBG_bench();
   write_lcd_bench();
-  }
-*/
-
-/*
-  void Engine_setup() {
-
-  while ((engine_setup == 0) || (timing_setup == 0)) {
-
-    //   Serial.print("engine ");
-    //   Serial.println(engine);
-    //   lcd.setCursor(6, 1);
-    //   lista();
-
-
-    while (digitalRead(button_B) == HIGH) {
-      lcd.setCursor(0, 0);
-      lcd.print("Select ENGINE: ");
-      lcd.setCursor(0, 3);
-      lcd.print("prev  ok  next");
-
-      readButtonState();  //Lettura stato buttons con controllo antirimbalzo
-
-      if (buttonUpState == HIGH || buttonDownState == HIGH) {
-        if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
-          if ((millis() - timerButtonPushed) > time_add_10) {
-            if ((millis() - timerButtonPushed) > time_add_100) {
-              if (buttonUpState == HIGH) engine = engine + 100;
-              if (buttonDownState == HIGH) engine = engine - 100;
-            } else {
-              byte resto = 0;
-              if (buttonUpState == HIGH) resto = 10 - (engine % 10);
-              if (buttonDownState == HIGH) resto = (engine % 10);
-              if (resto == 0) {
-                if (buttonUpState == HIGH) engine = engine + 10;
-                if (buttonDownState == HIGH) engine = engine - 10;
-              } else {
-                if (buttonUpState == HIGH) engine = engine + resto;
-                if (buttonDownState == HIGH) engine = engine - resto;
-              }
-            }
-          } else {
-            if (buttonUpState == HIGH) engine++;
-            if (buttonDownState == HIGH) engine--;
-          }
-          timerPauseRepeat = millis();
-          repeatEnable = HIGH;
-          if (engine > engineMax) engine = engineMax;
-          if (engine < engineMin) engine = engineMin;
-          Serial.print("engine ");
-          Serial.println(engine);
-          lcd.setCursor(6, 1);
-          lista();
-        }
-      } else {
-        timerButtonPushed = millis();
-        timerPauseRepeat = millis();
-        repeatEnable = LOW;
-      }
-    }
-    if (digitalRead(button_B) == LOW) {
-      Serial.println("premuto pulsante OK");
-      engine_setup = 1 ;
-      delay(100);
-      Serial.print("engine setup ");
-      Serial.println(engine_setup);
-    } //>>>>>>>>>>>>> modificare da qua
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("insert Timing: ");
-    lcd.setCursor(0, 3);
-    lcd.print("prev  ok  next");
-
-    Serial.print("timing setup ");
-    Serial.println(timing_setup);
-    //  lcd.clear();
-
-    while ((digitalRead(button_B) == HIGH) && timing_setup == 0) {
-
-
-      readButtonState();  //Lettura stato buttons con controllo antirimbalzo
-
-      if (buttonUpState == HIGH || buttonDownState == HIGH) {
-        if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
-          if ((millis() - timerButtonPushed) > time_add_10) {
-            if ((millis() - timerButtonPushed) > time_add_100) {
-              if (buttonUpState == HIGH) timing = timing + 100;
-              if (buttonDownState == HIGH) timing = timing - 100;
-            } else {
-              byte resto2 = 0;
-              if (buttonUpState == HIGH) resto2 = 10 - (timing % 10);
-              if (buttonDownState == HIGH) resto2 = (timing % 10);
-              if (resto2 == 0) {
-                if (buttonUpState == HIGH) timing = timing + 10;
-                if (buttonDownState == HIGH) timing = timing - 10;
-              } else {
-                if (buttonUpState == HIGH) timing = timing + resto2;
-                if (buttonDownState == HIGH) timing = timing - resto2;
-              }
-            }
-          } else {
-            if (buttonUpState == HIGH) timing++;
-            if (buttonDownState == HIGH) timing--;
-          }
-          timerPauseRepeat = millis();
-          repeatEnable = HIGH;
-          if (timing > timingMax) timing = timingMax;
-          if (timing < timingMin) timing = timingMin;
-          timing2 = timing;
-          timing_float = timing2 / 100;
-          lcd.setCursor (4, 1);
-          lcd.print(timing_float);
-          Serial.print("timing =");
-          Serial.println(timing_float);
-          lcd.setCursor(4, 1);
-        }
-      } else {
-        timerButtonPushed = millis();
-        timerPauseRepeat = millis();
-        repeatEnable = LOW;
-      }
-      // timing_setup = 1 ;
-      //Serial.print("timing setup ");
-      //Serial.println(timing_setup);
-      // lcd.clear();
-    }
-    if (digitalRead(button_B) == LOW) {
-
-      timing_setup = 1 ;
-      //   Serial.print("timing setup ");
-      //   Serial.println(timing_setup);
-      //   lcd.clear();
-    }
-  }
-  }
-
-*/
-/*
-  void lista() {
-  switch (engine) {
-
-    case 1:
-      lcd.print("16V46DF CW   ");
-      motore.cylinder = 16;
-      motore.fire_spacing = 120;
-      motore.cw = 1;
-      // motore.e = e1;
-      break;
-    case 2:
-      lcd.print("16V46DF CCW  ");
-      motore.cylinder = 16;
-      motore.fire_spacing = 120;
-      motore.cw = 0;
-      //motore.e = e1;
-      break;
-    case 3:
-      lcd.print("14V46DF CW   ");
-      motore.cylinder = 14;
-      motore.fire_spacing = 120;
-      motore.cw = 1;
-      // motore.e = e1;
-      break;
-    case 4:
-      lcd.print("14V46DF CCW  ");
-      motore.cylinder = 14;
-      motore.fire_spacing = 120;
-      motore.cw = 0;
-      // motore.e = e1;
-      break;
-    case 5:
-      lcd.print("12V46DF CW ");
-      motore.cylinder = 12;
-      motore.fire_spacing = 120;
-      motore.cw = 1;
-      for (byte i = 0; i < 16; i++) {
-        motore.e[i] = e5[i];
-      };
-      break;
-    case 6:
-      lcd.print("12V46DF CCW");
-      motore.cylinder = 12;
-      motore.fire_spacing = 120;
-      motore.cw = 0;
-      for (byte i = 0; i < 16; i++) {
-        motore.e[i] = e6[i];
-      };
-      break;
-    case 7:
-      lcd.print(" 9L46DF CW ");
-      motore.cylinder = 9;
-      motore.fire_spacing = 80;
-      motore.cw = 1;
-      // motore.e = e1;
-      break;
-    case 8:
-      lcd.print(" 9L46DF CCW");
-      motore.cylinder = 9;
-      motore.fire_spacing = 80;
-      motore.cw = 0;
-      // motore.e = e1;
-      break;
-    case 9:
-      lcd.print(" 8L46DF CW ");
-      motore.cylinder = 8;
-      motore.fire_spacing = 90;
-      motore.cw = 1;
-      // motore.e = e1;
-      break;
-    case 10:
-      lcd.print(" 8L46DF CCW");
-      motore.cylinder = 8;
-      motore.fire_spacing = 90;
-      motore.cw = 0;
-      break;
-    case 11:
-      lcd.print(" 7L46DF CW ");
-      motore.cylinder = 7;
-      motore.fire_spacing = 0;
-      motore.cw = 1;
-      // motore.e = e1;
-      break;
-    case 12:
-      lcd.print(" 7L46DF CCW");
-      motore.cylinder = 7;
-      motore.fire_spacing = 0;
-      motore.cw = 0;
-      // motore.e = e1;
-      break;
-    case 13:
-      lcd.print(" 6L46DF CW ");
-      motore.cylinder = 6;
-      motore.fire_spacing = 120;
-      motore.cw = 1 ;
-      for (byte i = 0; i < 16; i++) {
-        motore.e[i] = e13[i];
-      };
-      break;
-    case 14:
-      lcd.print(" 6L46DF CCW");
-      motore.cylinder = 6;
-      motore.fire_spacing = 120;
-      motore.cw = 0;
-      for (byte i = 0; i < 16; i++) {
-        motore.e[i] = e14[i];
-      };
-      break;
-  };
-  }
-*/
-/*
-  void calcolo_array() {
-
-  if (motore.cylinder > 10) {
-    for ( byte i = 1; i < motore.cylinder + 1; i++) {                    // per tutti i cilindri verifico se sono pari o dispari
-      double mod = fmod(i, 2);
-      Serial.print("mod = ");
-      Serial.print(mod);
-
-      if (mod == 1.0)  {                                          // 1 3 5  sui cilindri dispari aggiungo il delta tra le bancate (50°)
-        scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*//*;
-        Serial.print(" cilindro = A");
-        cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
-        Serial.print(cyl);
-
-      }
-      else {                                                      // 2 4 6  cilindri pari
-        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + 50/*- timing_float*//*;
-        Serial.print(" cilindro = B");
-        cyl = motore.e[i - 1] - 20;                       // devo modificare a senconda dell'engine mettendo il array corretto
-        Serial.print(cyl);
-
-      }
-      Serial.print(" scoppio= ");
-      Serial.println(scoppio);
-    }
-  }
-  else  // se motore linea quindi cilindri minori di 10
-  {
-    for ( byte i = 1; i < motore.cylinder + 1; i++) {
-      // scoppio = ((i - 1) / 2) * motore.fire_spacing  /*- timing_float*//*;
-      scoppio = (i - 1) * motore.fire_spacing  /*- timing_float*//*;
-      Serial.print(" cilindro = A");
-      cyl = motore.e[i - 1] - 10;                              // devo modificare a senconda dell'engine mettendo il array corretto
-      Serial.print(cyl);
-      Serial.print(" scoppio= ");
-      Serial.println(scoppio);
-    }
-  }
-
-  Serial.println("scritti tutti");
   }
 */

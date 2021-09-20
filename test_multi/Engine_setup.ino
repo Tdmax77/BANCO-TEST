@@ -38,8 +38,8 @@ void Engine_setup() {
           if (engine > engineMax) engine = engineMax;
           if (engine < engineMin) engine = engineMin;
           Serial.print(F("engine "));
-          Serial.println(engine);           
-          lcd.setCursor(4, 1);          
+          Serial.println(engine);
+          lcd.setCursor(4, 1);
           lista();
         }
       } else {
@@ -54,11 +54,11 @@ void Engine_setup() {
       delay(200);
       Serial.print(F("engine setup "));
       Serial.println(engine_setup);
-    }     
+    }
     testo_richiesta_inserimento_Timing();
     Serial.print(F("timing setup "));
     Serial.println(timing_setup);
-   
+
     while ((digitalRead(button_B) == HIGH) && timing_setup == 0) {
       readButtonState();  //Lettura stato buttons con controllo antirimbalzo
       if (buttonUpState == HIGH || buttonDownState == HIGH) {
@@ -103,8 +103,8 @@ void Engine_setup() {
     if (digitalRead(button_B) == LOW) {
 
       timing_setup = 1 ;
-     // lcd.clear();
+      // lcd.clear();
     }
   }
-  
+
 }

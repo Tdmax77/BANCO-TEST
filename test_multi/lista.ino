@@ -4,78 +4,80 @@ void lista() {
     case 1:
       lcd.print("16V46DF CW   ");           // label che verrà printata
       motore.cylinder = 16;                 // numero cilindri
-      motore.fire_spacing = 90;            // distanza tra gli scoppi
+      motore.fire_spacing = 9000;            // distanza tra gli scoppi
       motore.cw = 1;                        // senso di rotazione
       for (byte i = 0; i < 16; i++) {       // quando scelgo il motore nel setup, copio i dati del vettore nella struct
         motore.e[i] = e1[i];
       };
       motore.e[16] = e1[0];
       motore.index = 8;                     // serve a calcolare binA e binB e corrisponde ai cilinddi per bancata
-      motore.delta = 40;                    // sfasamento tra le bancate
-      
+      motore.delta = 4000;                    // sfasamento tra le bancate
+
       break;
     case 2:
       lcd.print("16V46DF CCW  ");
       motore.cylinder = 16;
-      motore.fire_spacing = 90;
+      motore.fire_spacing = 9000;
       motore.cw = 0;
       for (byte i = 0; i < 16; i++) {
         motore.e[i] = e2[i];
       };
       motore.e[16] = e2[0];
       motore.index = 8;
-      motore.delta = 40;
+      motore.delta = 4000;
       break;
-    /*    case 3:
-          lcd.print("14V46DF CW   ");
-          motore.cylinder = 14;
-          motore.fire_spacing = 0;
-          motore.cw = 1;
-          for (byte i = 0; i < 16; i++) {
-            motore.e[i] = e3[i];
-          };
-          motore.e[14] = e3[0];
-          motore.index = 7;
-          break;
-        case 4:
-          lcd.print("14V46DF CCW  ");
-          motore.cylinder = 14;
-          motore.fire_spacing = 0;
-          motore.cw = 0;
-          for (byte i = 0; i < 16; i++) {
-            motore.e[i] = e4[i];
-          };
-          motore.e[14] = e4[0];
-          motore.index = 7;
-          break;
-  */    case 5:
-      lcd.print("12V46DF CW ");
+    case 3:
+      lcd.print("14V46DF CW   ");
+      motore.cylinder = 14;
+      motore.fire_spacing = 10285;
+      motore.cw = 1;
+      for (byte i = 0; i < 16; i++) {
+        motore.e[i] = e3[i];
+      };
+      motore.e[14] = e3[0];
+      motore.index = 7;
+      motore.delta = 5000; /////////////////////////////////////////////////////////////////
+      break;
+    case 4:
+      lcd.print("14V46DF CCW  ");
+      motore.cylinder = 14;
+      motore.fire_spacing = 10285;
+      motore.cw = 0;
+      for (byte i = 0; i < 16; i++) {
+        motore.e[i] = e4[i];
+      };
+      motore.e[14] = e4[0];
+      motore.index = 7;
+      motore.delta = 5000; /////////////////////////////////////////////////////////////////
+      break;
+    case 5:
+      lcd.print("12V46DF CW   ");
       motore.cylinder = 12;
-      motore.fire_spacing = 120;
+      motore.fire_spacing = 12000;
       motore.cw = 1;
       for (byte i = 0; i < 16; i++) {
         motore.e[i] = e5[i];
       };
       motore.e[12] = e5[0];
       motore.index = 6;
-      motore.delta = 50;
+      motore.delta = 5000;
       break;
     case 6:
-      lcd.print("12V46DF CCW");
+      lcd.print("12V46DF CCW  ");
       motore.cylinder = 12;
-      motore.fire_spacing = 120;
+      motore.fire_spacing = 12000;
       motore.cw = 0;
       for (byte i = 0; i < 16; i++) {
         motore.e[i] = e6[i];
       };
       motore.e[12] = e6[0];
       motore.index = 6;
-      motore.delta = 50;
+      motore.delta = 5000;
       break;
     case 7:
-      lcd.print(" 9L46DF CW ");
+      lcd.print(" 9L46DF CW   ");
       motore.cylinder = 9;
-      motore.fire_spacing = 80;
+      motore.fire_spacing = 8000;
       motore.cw = 1;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e7[i];              // devo mettere i valori del linea solo nelle caselle dispari per far apparire sempre
@@ -84,9 +86,9 @@ void lista() {
       motore.index = 9;
       break;
     case 8:
-      lcd.print(" 9L46DF CCW");
+      lcd.print(" 9L46DF CCW  ");
       motore.cylinder = 9;
-      motore.fire_spacing = 80;
+      motore.fire_spacing = 8000;
       motore.cw = 0;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e8[i];
@@ -95,9 +97,9 @@ void lista() {
       motore.index = 9;
       break;
     case 9:
-      lcd.print(" 8L46DF CW ");
+      lcd.print(" 8L46DF CW   ");
       motore.cylinder = 8;
-      motore.fire_spacing = 90;
+      motore.fire_spacing = 9000;
       motore.cw = 1;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e9[i];
@@ -106,9 +108,9 @@ void lista() {
       motore.index = 8;
       break;
     case 10:
-      lcd.print(" 8L46DF CCW");
+      lcd.print(" 8L46DF CCW  ");
       motore.cylinder = 8;
-      motore.fire_spacing = 90;
+      motore.fire_spacing = 9000;
       motore.cw = 0;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e10[i];
@@ -116,32 +118,32 @@ void lista() {
       motore.e[16] = e10[0];
       motore.index = 8;
       break;
-    /*   case 11:
-          lcd.print(" 7L46DF CW ");
-          motore.cylinder = 7;
-          motore.fire_spacing = 0;
-          motore.cw = 1;
-          for (byte i = 0; i < 16; i++) {
-            motore.e[2 * i] = e11[i];
-          };
-          motore.index = 7;
-          motore.e[14] = e12[0];
-          break;
-        case 12:
-          lcd.print(" 7L46DF CCW");
-          motore.cylinder = 7;
-          motore.fire_spacing = 0;
-          motore.cw = 0;
-          for (byte i = 0; i < 16; i++) {
-            motore.e[2 * i] = e12[i];
-          };
-          motore.e[14] = e12[0];
-          motore.index = 7;
-          break;
-  */   case 13:
-      lcd.print(" 6L46DF CW ");
+    case 11:
+      lcd.print(" 7L46DF CW   ");
+      motore.cylinder = 7;
+      motore.fire_spacing = 10285;
+      motore.cw = 1;
+      for (byte i = 0; i < 16; i++) {
+        motore.e[2 * i] = e11[i];
+      };
+      motore.index = 7;
+      motore.e[14] = e12[0];
+      break;
+    case 12:
+      lcd.print(" 7L46DF CCW  ");
+      motore.cylinder = 7;
+      motore.fire_spacing = 10285;
+      motore.cw = 0;
+      for (byte i = 0; i < 16; i++) {
+        motore.e[2 * i] = e12[i];
+      };
+      motore.e[14] = e12[0];
+      motore.index = 7;
+      break;
+    case 13:
+      lcd.print(" 6L46DF CW   ");
       motore.cylinder = 6;
-      motore.fire_spacing = 120;
+      motore.fire_spacing = 12000;
       motore.cw = 1 ;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e13[i];
@@ -150,9 +152,9 @@ void lista() {
       motore.index = 6;
       break;
     case 14:
-      lcd.print(" 6L46DF CCW");
+      lcd.print(" 6L46DF CCW  ");
       motore.cylinder = 6;
-      motore.fire_spacing = 120;
+      motore.fire_spacing = 12000;
       motore.cw = 0;
       for (byte i = 0; i < 16; i++) {
         motore.e[2 * i] = e13[i];

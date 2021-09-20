@@ -21,7 +21,7 @@ void mostra_cilindro_display() {
         
       }
       else {                                                      // 2 4 6  cilindri pari
-        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + motore.delta/*- timing_float*/;
+        scoppio = (i / 2 * motore.fire_spacing ) - motore.fire_spacing + (motore.delta/100)/*- timing_float*/;
         Serial.print(" cilindro = B");
         cyl = motore.e[i - 1] - 20;                       // devo modificare a senconda dell'engine mettendo il array corretto
         Serial.print(cyl);
