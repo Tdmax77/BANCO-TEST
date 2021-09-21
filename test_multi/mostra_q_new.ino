@@ -1,34 +1,15 @@
-void mostra_q_old() {
+void mostra_q() {
 
 
   /* binA e binB sono gli intervalli di cambio dell'indice del vettore per visualizzare la label col cilindro
       nominalA e nominalB sono i timing
   */
-  // Serial.print(F("funzioneA "));
-  // auto a = map (angolo in centesimi, mezzo firespace centesimi - timing float centesimi
-  auto binA = map(angprint, (motore.fire_spacing) / 2.0 - (motore.fire_spacing) - timing2, 72000 + (motore.fire_spacing ) / 2.0 + (motore.fire_spacing )  - timing2, 1, motore.index + 1 + 2);
-  // +1 perchè devo farne uno piu dei cilindri, inoltre ne aggiungo 2 per aver lintevallo negativo prima dello zero
-/*  Serial.println(binA);
-  Serial.print("firespacing =  ");
-  Serial.println(motore.fire_spacing );
-  Serial.print("timing2 ");
-  Serial.println(timing2);
-  Serial.print("delta ");
-  Serial.println(motore.delta);
-*/
+  auto binA = map(/*angprint*/angstamp*100, (motore.fire_spacing) / 2.0 - (motore.fire_spacing) - timing2, 72000 + (motore.fire_spacing ) / 2.0 + (motore.fire_spacing )  - timing2, 1, motore.index + 1 + 2);
+  auto binB = map(/*angprint*/angstamp*100, (motore.delta) + (motore.fire_spacing) / 2.0 - (motore.fire_spacing) - timing2 , (motore.delta) + 72000 + (motore.fire_spacing) / 2.0 + (motore.fire_spacing) - timing2, 1, motore.index + 1 + 2);
 
-  // Serial.print("funzioneB ");
-  auto binB = map(angprint, (motore.delta) + (motore.fire_spacing) / 2.0 - (motore.fire_spacing) - timing2 , (motore.delta) + 72000 + (motore.fire_spacing) / 2.0 + (motore.fire_spacing) - timing2, 1, motore.index + 1 + 2);
-
-  // Serial.println(binB);
-  //  auto nominalA = -motore.fire_spacing + motore.fire_spacing * binA - timing/100 ;
+  
   float nominalA = ((-motore.fire_spacing + motore.fire_spacing * binA - timing2)/100) ;
   float nominalB = ((-motore.fire_spacing + motore.delta + motore.fire_spacing * binB - timing2)/100) ;
-/*  Serial.print("nominal A= ");
-  Serial.println(nominalA);
-  Serial.print("nominal B= ");
-  Serial.println(nominalB);
-*/  // Serial.println(nominalA);
 
   float gino = 0.0;
   if (abs(nominalA - angstamp) < range) {                                     // se A è nel range stampa

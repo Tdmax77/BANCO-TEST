@@ -12,6 +12,7 @@
    v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta
    v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
    v1.17 sembra andare tutto compreso il 14v , da ottimizzare 
+   v 1.18 sitemato cw e ccw 
    
 */
 
@@ -26,7 +27,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.17; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.18; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -194,7 +195,7 @@ char *e13[] = {"A1", "A2", "A4", "A6", "A5", "A3"}; // 6L46DF  CW
 char *e14[] = {"A1", "A3", "A5", "A6", "A4", "A2"}; // 6L46DF CCW
 
 float q = 0;
-//byte h = 2;
+byte h = 2;
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////

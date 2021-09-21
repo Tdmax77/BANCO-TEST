@@ -3,11 +3,20 @@ void display_angolo() {
   {
     valoreangolocorrettoPrev = payload.num_sent;        // read angle value
     angprint = payload.num_sent;                       //convert from long to float
-    angstamp = angprint / 100;                         // add the comma
-    // lcd.setCursor(5, 2);
-    //lcd.print("      ");
-   lcd.setCursor(5, 2);
-   lcd.print(angstamp);
-    Serial.println(angstamp);
+
+    if (motore.cw == 1) {
+      angstamp = angprint / 100;                         // add the comma
+    } else {
+      angstamp = ((72000 - angprint) /*- 72000*/) / 100;
+    }
+
+
+    lcd.setCursor(5, 2);
+    lcd.print(angstamp);
+    /*    Serial.print(" cw =");
+        Serial.print(angstamp);
+        Serial.print("    ccw =");
+        Serial.println(((72000 - angprint)-72000)/100);
+    */
   }
 }
