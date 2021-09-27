@@ -46,7 +46,7 @@ void mostra_q() {
     }
   }  else {                                                                    // se non è nella condizione di visualizazione pulisce lo schermo
     lcd.setCursor(12, 2);
-    lcd.print("         ");
+    lcd.print("        ");
   }
 
 

@@ -16,7 +16,7 @@ void While_network(){
       {
         //lcd.clear();
         PROCEDURA_OFFSET();
-        //read_serialmonitor();// Offset procedure
+         //read_serialmonitor();// Offset procedure
       }
       payload.OffsetReq = 0;                                                // reset the Offset request
       payload.VO = var;                                                     // assign offset value to payload
@@ -25,6 +25,7 @@ void While_network(){
       delay(100);                                                           // little delay
       tempo = millis();                                                     // set variable for y status
       y = 0;                                                                // put y to 0
+      lcd.clear();
       write_lcdBG_AA();
     } else {
       write_lcdBG_AA();

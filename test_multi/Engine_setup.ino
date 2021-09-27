@@ -103,8 +103,7 @@ void Engine_setup() {
     if (digitalRead(button_B) == LOW) {
 
       timing_setup = 1 ;
-      // lcd.clear();
     }
   }
-
+  lcd.clear();
 }

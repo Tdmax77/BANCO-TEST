@@ -13,6 +13,7 @@
    v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
    v1.17 sembra andare tutto compreso il 14v , da ottimizzare 
    v 1.18 sitemato cw e ccw 
+   v1.19 ok
    
 */
 
@@ -27,7 +28,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.18; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.19; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -270,7 +271,7 @@ void setup() {
   */
   Engine_setup();
   calcolo_array(); // calcola gli array min e max
-
+Serial.end();
 }
 
 
@@ -285,12 +286,12 @@ void setup() {
 void loop() {
 
 
-  // if (AA == 0) banchetto();
-  // if (AA == 1) { // CONFIGURAZIONE sul motore
-  // mostra_array();
+ ////// // if (AA == 0) banchetto();
+ ////// // if (AA == 1) { // CONFIGURAZIONE sul motore
+ ////// // mostra_array();
   mostra_q();
   read_sensor();            // legge sensore pressione onboard
-  //read_serialmonitor();     //legge la seriale (per azzeramenti debug)
+  read_serialmonitor();     //legge la seriale (per azzeramenti debug)
   pulsanti_AA();
   condition_for_offset();
 
@@ -317,7 +318,7 @@ void loop() {
   }
 
 
-  write_pressure();
+//  write_pressure();
   //  }  // uso co doppio boot
 
 
@@ -368,10 +369,7 @@ void loop() {
   }
 */
 
-void read_sensor() { // legge il sensore di pressione sul arduino master
-  ValoreADC = analogRead(A0);
-  PressioneBar = (ValoreADC - 97 ) * 0.0072763;
-}
+
 
 void read_serialmonitor() {  // legge i comandi da seriale più per debug che altro
   tasto = Serial.read();
@@ -391,12 +389,10 @@ void read_serialmonitor() {  // legge i comandi da seriale più per debug che al
     case 'b':
       write_lcdBG_AA();
       break;
-    case 'h':
-      h++;
+    case 'r':
+      read_sensor();
       break;
-    case 'g':
-      h--;
-      break;
+   
   }
 }
 
@@ -481,23 +477,7 @@ void write_pressure() {     // scrive i dati della pressione
   }
 */
 
-void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato (non serve e così non flashano le scritte
-  lcd.setCursor(0, 0);
-  lista();
-  lcd.setCursor(12, 0);
-  lcd.print(F("T= "));
-  lcd.setCursor(15, 0);
-  lcd.print(timing_float);
-  lcd.setCursor(0, 1);
-  lcd.print(F("P= "));
-  lcd.setCursor(8, 1);
-  lcd.print(F("Pt= "));
-  lcd.setCursor(0, 2);
-  lcd.print(F("Ang= "));
-  lcd.setCursor(0, 3);
-  lcd.print(F("  -    -   rst    - "));
 
-}
 
 void pulsanti_AA() {
   if (digitalRead(button_C) == LOW) {          // se premuto azzera il valore di PT (target)
@@ -533,123 +513,9 @@ void pulsanti_AA() {
   }
   }
 */
-/*
-  void display_no_conn() {
 
-  lcd.clear();
-  lcd.setCursor(0, 1);
-  lcd.println("   NO  CONNECTION    ");
-  Serial.println("noconn");
-  }
-*/
-/*
-  void testo_richiesta_inserimento_offset() {
-  lcd.clear();
-  lcd.setCursor(0, 1);
-  lcd.println("  INSERIRE  VALORE   ");
-  lcd.setCursor(0, 2);
-  lcd.println("   ANGOLO  VOLANO     ");
-  }
-*/
 
-/*
-  void display_angolo() {
-  if (payload.num_sent != valoreangolocorrettoPrev)     // refresh display only if angle changes
-  {
-    valoreangolocorrettoPrev = payload.num_sent;        // read angle value
-    angprint = payload.num_sent;                       //convert from long to float
-    angstamp = angprint / 100;                         // add the comma
-    // lcd.setCursor(5, 2);
-    //lcd.print("      ");
-    lcd.setCursor(5, 2);
-    lcd.print(angstamp);
-    Serial.println(angstamp);
-  }
-  }
-*/
 
-void readButtonState() {
-
-  byte readingUp = digitalRead(button_C); //Lettura ingresso digitale del pulsante di UP
-  byte readingDown = digitalRead(button_A); //Lettura ingresso digitale del pulsante di Down
-
-  //if (readingUp == HIGH) { //sul coto sono a 0 e li porto a 5
-  if (readingUp == LOW) {
-    if ((millis() - UpDebounceTime) > debounceDelay) {
-      buttonUpState = HIGH;
-    }
-  } else {
-    buttonUpState = LOW;
-    UpDebounceTime = millis();
-  }
-
-  //if (readingDown == HIGH) {  //sul coto sono a 0 e li porto a 5
-  if (readingDown == LOW) {
-    if ((millis() - DownDebounceTime) > debounceDelay) {
-      buttonDownState = HIGH;
-
-    }
-  } else {
-    buttonDownState = LOW;
-    DownDebounceTime = millis();
-  }
-}
-/*
-  void PROCEDURA_OFFSET() { // mi restituisce un valore var che ho inserito come offset
-
-  readButtonState();  //Lettura stato buttons con controllo antirimbalzo
-
-  if (buttonUpState == HIGH || buttonDownState == HIGH) {
-    if ((repeatEnable == HIGH && ((millis() - timerPauseRepeat) > time_pause)) || repeatEnable == LOW) {
-      if ((millis() - timerButtonPushed) > time_add_10) {
-        if ((millis() - timerButtonPushed) > time_add_100) {
-          if (buttonUpState == HIGH) var = var + 100;
-          if (buttonDownState == HIGH) var = var - 100;
-        } else {
-          byte resto = 0;
-          if (buttonUpState == HIGH) resto = 10 - (var % 10);
-          if (buttonDownState == HIGH) resto = (var % 10);
-          if (resto == 0) {
-            if (buttonUpState == HIGH) var = var + 10;
-            if (buttonDownState == HIGH) var = var - 10;
-          } else {
-            if (buttonUpState == HIGH) var = var + resto;
-            if (buttonDownState == HIGH) var = var - resto;
-          }
-        }
-      } else {
-        if (buttonUpState == HIGH) var++;
-        if (buttonDownState == HIGH) var--;
-      }
-      timerPauseRepeat = millis();
-      repeatEnable = HIGH;
-      if (var > varMax) var = varMax;
-      if (var < varMin) var = varMin;
-      /*lcd.setCursor(0, 0);
-        lcd.print("                    ");    //disegnare caratteri vuoti dovrebbe essere piu veloce del clear
-        lcd.setCursor(0, 1);
-        lcd.print("                    ");
-        lcd.setCursor(0, 2);
-        lcd.print("                    ");    //disegnare caratteri vuoti dovrebbe essere piu veloce del clear
-        lcd.setCursor(0, 3);
-        lcd.print("                    ");
-*//*
-      lcd.clear();
-      lcd.setCursor(0, 1);
-      lcd.print("Inserire Offset:");
-      lcd.setCursor(1, 2);
-      lcd.print(var);
-      lcd.setCursor(10, 2);
-      lcd.print("Gradi");
-      delay(200);
-    }
-  } else {
-    timerButtonPushed = millis();
-    timerPauseRepeat = millis();
-    repeatEnable = LOW;
-  }
-  }
-*/
 /*
   void banchetto() {  //CONFIGURAZIONE BANCO
 
