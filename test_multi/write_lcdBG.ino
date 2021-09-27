@@ -12,6 +12,6 @@ void write_lcdBG_AA() {  // scrive il "background" che non viene mai aggiornato 
   lcd.setCursor(0, 2);
   lcd.print(F("Ang= "));
   lcd.setCursor(0, 3);
-  lcd.print(F("  -    -   rst    - "));
+  lcd.print(F("f.o.   -   rst    - "));
 
 }

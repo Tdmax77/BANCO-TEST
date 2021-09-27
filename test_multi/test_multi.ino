@@ -11,10 +11,10 @@
    V1.12 aggiungendo la scrittura del cilindro
    v1.14 creati vettori con scoppi, creati vettori con limiti  da implementare la visualizzazione corretta
    v1.15 visualizza correttamente i cilindri, da sistemare la soglia di attivazione della finestra ( parametro h) e sistamare il primo cilindro (valore negativo)
-   v1.17 sembra andare tutto compreso il 14v , da ottimizzare 
-   v 1.18 sitemato cw e ccw 
+   v1.17 sembra andare tutto compreso il 14v , da ottimizzare
+   v 1.18 sitemato cw e ccw
    v1.19 ok
-   
+
 */
 
 //#include <Wire.h>
@@ -179,9 +179,9 @@ struct motore {
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
-byte range = 2; // tolleranza di visualizzazione in gradi
+byte range = 3; // tolleranza di visualizzazione in gradi
 char *e1[] = {"A1", "B1", "A3", "B3", "A2", "B2", "A5", "B5", "A8", "B8", "A6", "B6", "A7", "B7", "A4", "B4"}; // 16V46DF  CW
-char *e2[] = {"A1", "B4", "A4", "B7", "A7", "B6", "A6", "B8", "A8", "B5", "A5", "B2", "A2", "B3", "A3", "B1"}; // 16V46DF  CW
+char *e2[] = {"A1", "B4", "A4", "B7", "A7", "B6", "A6", "B8", "A8", "B5", "A5", "B2", "A2", "B3", "A3", "B1"}; // 16V46DF  CCW
 char *e3[] = {"A1", "B1", "A3", "B3", "A5", "B5", "A7", "B7", "A6", "B6", "A4", "B4", "A1", "B1",}; // 14V46DF  CW
 char *e4[] = {"A1", "B2", "A2", "B4", "A4", "B6", "A6", "B7", "A7", "B8", "A8", "B3", "A3", "B1",}; // 14V46DF  CCW
 char *e5[] = {"A1", "B1", "A5", "B5", "A3", "B3", "A6", "B6", "A2", "B2", "A4", "B4"}; // 12V46DF  CW
@@ -246,32 +246,32 @@ void setup() {
   // lcd.setBacklight(LOW);
   lcd.init();                      // liquid
   lcd.backlight();                  //liquid
-  /*  lcd.setCursor(0, 0);
-    lcd.print("     Fuel Pump     ");
-    lcd.setCursor(0, 1);
-    lcd.print("   Timing Checker   ");
-    lcd.setCursor(12, 2);
-    lcd.print(vers);
-    delay(3000);
-    //  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("     Fuel Pump     ");
+  lcd.setCursor(0, 1);
+  lcd.print("   Timing Checker   ");
+  lcd.setCursor(7, 2);
+  lcd.print(vers);
+  delay(3000);
+  //  lcd.clear();
 
 
 
-    /*
+  /*
     byte bypass = digitalRead(button_D);   // per attivare il doppio menu
 
     if (bypass == HIGH) {   //se clicco il 4 pulsante parto in modalità testbench, altrimenti parte in modalità montaggio
-     AA = 1;
-     //write_lcdBG_AA();
+    AA = 1;
+    //write_lcdBG_AA();
 
     } else {
-     AA = 0;
-     //   write_lcdBG_bench();
+    AA = 0;
+    //   write_lcdBG_bench();
     }
   */
   Engine_setup();
   calcolo_array(); // calcola gli array min e max
-Serial.end();
+  //Serial.end();
 }
 
 
@@ -286,9 +286,9 @@ Serial.end();
 void loop() {
 
 
- ////// // if (AA == 0) banchetto();
- ////// // if (AA == 1) { // CONFIGURAZIONE sul motore
- ////// // mostra_array();
+  ////// // if (AA == 0) banchetto();
+  ////// // if (AA == 1) { // CONFIGURAZIONE sul motore
+  ////// // mostra_array();
   mostra_q();
   read_sensor();            // legge sensore pressione onboard
   read_serialmonitor();     //legge la seriale (per azzeramenti debug)
@@ -317,8 +317,11 @@ void loop() {
 
   }
 
+  if (digitalRead(button_A) == LOW) {
+    firing_order();
+  }
 
-//  write_pressure();
+  //  write_pressure();
   //  }  // uso co doppio boot
 
 
@@ -392,7 +395,11 @@ void read_serialmonitor() {  // legge i comandi da seriale più per debug che al
     case 'r':
       read_sensor();
       break;
-   
+    case 'f':
+      firing_order();
+      break;
+
+
   }
 }
 
