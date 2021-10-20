@@ -8,7 +8,7 @@ lcd.print("      ");
     if (motore.cw == 1) {
       angstamp = angprint / 100;                         // add the comma
     } else {
-      angstamp = ((72000 - angprint) /*- 72000*/) / 100;
+      angstamp = (angprint - 72000) / 100 * -1;
     }
 
 

@@ -14,6 +14,7 @@
    v1.17 sembra andare tutto compreso il 14v , da ottimizzare
    v 1.18 sitemato cw e ccw
    v1.19 ok
+   v1.20 correzione inserimento offset CCW
 
 */
 
@@ -28,7 +29,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.19; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.20; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi

@@ -1,5 +1,5 @@
-void While_network(){
-    while ( network.available() ) {                             // if network is up  ... I need at least one slave active for to keep active the network, otherwise no network will be available
+void While_network() {
+  while ( network.available() ) {                             // if network is up  ... I need at least one slave active for to keep active the network, otherwise no network will be available
     if (mostraangolo == 1) {                                  // after a lost connection it need to refresh display also if value is not changed
       lcd.setCursor(8, 1);
       lcd.print(angstamp);
@@ -16,10 +16,19 @@ void While_network(){
       {
         //lcd.clear();
         PROCEDURA_OFFSET();
-         //read_serialmonitor();// Offset procedure
+        //read_serialmonitor();// Offset procedure
       }
       payload.OffsetReq = 0;                                                // reset the Offset request
-      payload.VO = var;                                                     // assign offset value to payload
+      if (motore.cw == 1) {
+        payload.VO = var;
+      }
+      else {
+        payload.VO = 720 - var;
+      }
+
+
+
+      // assign offset value to payload
       RF24NetworkHeader header5(05);                                        // define encoder network address
       network.write(header5, &payload, sizeof(payload));                    // send payload to encoder
       delay(100);                                                           // little delay
