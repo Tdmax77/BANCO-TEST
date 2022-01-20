@@ -24,7 +24,7 @@ void lista() {
       };
       motore.e[16] = e2[0];
       motore.index = 8;
-      motore.delta = 4000;
+      motore.delta = 5000;
       break;
     case 3:
       lcd.print("14V46DF CW   ");
@@ -36,7 +36,7 @@ void lista() {
       };
       motore.e[14] = e3[0];
       motore.index = 7;
-      motore.delta = 5000; /////////////////////////////////////////////////////////////////
+      motore.delta = 5290; /////////////////////////////////////////////////////////////////
       break;
     case 4:
       lcd.print("14V46DF CCW  ");
@@ -60,7 +60,7 @@ void lista() {
       };
       motore.e[12] = e5[0];
       motore.index = 6;
-      motore.delta = 5000;
+      motore.delta = 5000;  // nel caso del CCW il valore è diverso per via del fatto che gira in senso opposto  quindi 120-50
       break;
     case 6:
       lcd.print("12V46DF CCW  ");
@@ -72,7 +72,7 @@ void lista() {
       };
       motore.e[12] = e6[0];
       motore.index = 6;
-      motore.delta = 5000;
+      motore.delta = 7000;
       break;
     case 7:
       lcd.print(" 9L46DF CW   ");
@@ -169,12 +169,12 @@ void lista() {
 
                    A1   B1     A5   B5    ...  ...     A4   B4     A1
                 ...|....|......|....|......|....|......|....|......|...               punto morto
-                   0    50    120  170    ...  ...    600  650    720
+                   0    70    120  190    ...  ...    600  670    720
 
-             |.....1.....|.....3.....|.....*.....|.....11....|.....1.....|             mappa A
+             |.....1.....|.....2.....|.....*.....|.....12....|.....1.....|             mappa A
             -60          60         120         ...         660         790
 
-                  |.....2.....|.....4.....|.....*.....|.....12....|.....2.....|        mappa B
+                  |.....1.....|.....2.....|.....*.....|.....12....|.....1.....|        mappa B
                  -10          110        ...         590         710         820
 
    Creo 2 mappe per dividere i 720 gradi in un mumero di intervalli = ai cilindri per bancata +1
@@ -191,13 +191,13 @@ void lista() {
    Questo criterio permette di avere la label solo in prossimità del punto di scoppio perchè discrimina se usare la mappa A o la mappa B
 
    Esempio: 12 cilindri con un range = +- 2 gradi
-    A 47°  sono contemporanemente in mapA = 1  e mapB = 2
+    A 68°  sono contemporanemente in mapA = 2  e mapB = 2
     questi 2 puntatori mi restituscono il primo ed il secondo valore del vettore motor.e
     char *e5[] = {"A1","B1","A5","B5","A3","B3","A6","B6","A2","B2","A4","B4"}; // 12V46DF  CW
 
-    siccome l'accensione di A1 avviene a 50°  e di B1 a 50° nessuno dei due è nel range (718°-2° per A1  48°-52° per B1) quindi nessuna label viene visualizzata.
+    siccome l'accensione di A1 avviene a 0°  e di B1 a 70° nessuno dei due è nel range (718°-2° per A1  68°-72° per B1) quindi nessuna label viene visualizzata.
 
-    A 48.5°sono sempre in mapA = 1  e mapB = 2  ma stavolta sono nel range di B1 quindi visualizzerò B1 a schermo.
+    A 68.5°sono sempre in mapA = 1  e mapB = 2  ma stavolta sono nel range di B1 quindi visualizzerò B1 a schermo.
 
 
 */

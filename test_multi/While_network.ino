@@ -31,9 +31,10 @@ void While_network() {
       // assign offset value to payload
       RF24NetworkHeader header5(05);                                        // define encoder network address
       network.write(header5, &payload, sizeof(payload));                    // send payload to encoder
+      y = 0;
       delay(100);                                                           // little delay
       tempo = millis();                                                     // set variable for y status
-      y = 0;                                                                // put y to 0
+      //     y = 0;                                                                // put y to 0
       lcd.clear();
       write_lcdBG_AA();
     } else {

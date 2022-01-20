@@ -14,7 +14,10 @@
    v1.17 sembra andare tutto compreso il 14v , da ottimizzare
    v 1.18 sitemato cw e ccw
    v1.19 ok
-   v1.20 correzione inserimento offset CCW
+   v1.20 correzione inserimento offset CCW e modificati ritardi e y=0 nel while network per evitare la doppia richiesta del offset volano
+   v1.21 corretto errore su 12 cilindri (sfasamento bancate)
+   v1.22 modificata visualizzazione del valore di timing sul cilindro 
+   
 
 */
 
@@ -29,7 +32,7 @@
 //#include <Vector.h>
 
 
-const float vers = 1.20; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
+const float vers = 1.22; // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< INSERIRE LA REVISIONE SE SI MODIFICA
 /*
   //variabili per spi
   byte f0 = 0;    // variabili per spi
@@ -79,6 +82,7 @@ char tasto = 0;
 /* variabile display*/
 //LiquidTWI lcd(0);
 LiquidCrystal_I2C lcd(0x27, 20, 4);
+
 /* variabile display*/
 
 // variabili network
@@ -180,7 +184,7 @@ struct motore {
 motore motore;
 float scoppio = 0;
 byte cyl = 0;
-byte range = 3; // tolleranza di visualizzazione in gradi
+byte range = 5; // tolleranza di visualizzazione in gradi
 char *e1[] = {"A1", "B1", "A3", "B3", "A2", "B2", "A5", "B5", "A8", "B8", "A6", "B6", "A7", "B7", "A4", "B4"}; // 16V46DF  CW
 char *e2[] = {"A1", "B4", "A4", "B7", "A7", "B6", "A6", "B8", "A8", "B5", "A5", "B2", "A2", "B3", "A3", "B1"}; // 16V46DF  CCW
 char *e3[] = {"A1", "B1", "A3", "B3", "A5", "B5", "A7", "B7", "A6", "B6", "A4", "B4", "A1", "B1",}; // 14V46DF  CW
@@ -297,7 +301,8 @@ void loop() {
   condition_for_offset();
 
   network.update();           // looking for news on the network
-  delay(5);                   // needed at least 1 ms of delay or display stay in NOT CONN state (i don't know why ...
+  // delay(5);                   // needed at least 1 ms of delay or display stay in NOT CONN state (i don't know why ...
+   delay(7);                   // needed at least 1 ms of delay or display stay in NOT CONN state (i don't know why ...
 
   While_network();  // receive data from encoder, if needed start offset routine and drawing background
 
